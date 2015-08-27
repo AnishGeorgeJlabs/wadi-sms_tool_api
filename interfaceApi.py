@@ -48,13 +48,13 @@ def formPost(request):
             arabic = '_'
         data['timestamp'] = datetime.now()
 
-        result = db.queries.insert_one(data)
+        result = db.jobs.insert_one(data)
 
         url = 'http://45.55.72.208/wadi/query?id='+str(result.inserted_id)
         row = ['Once', 'external', date, hour, minute, english, arabic, url]
 
         if 'debug' in data and data['debug'] is True:
-            db.queries.remove({"_id": result.inserted_id})
+            db.jobs.remove({"_id": result.inserted_id})
             return jsonResponse({'success': True, 'data_received': data, 'row created': row})
         else:
             wrk_sheet = get_scheduler_sheet()
@@ -70,7 +70,7 @@ def query(request):
     Get the pipeline and options for the wadi system
     """
     id = request.GET['id']
-    obj = db.queries.find_one({"_id": ObjectId(id)})
+    obj = db.jobs.find_one({"_id": ObjectId(id)})
     if obj:
         options = obj['target_config']
         # Customisation ----------------- #

@@ -1,0 +1,40 @@
+{
+  "_id": {
+    "$oid": "55cb41d821aaec0ef4ac11f4"
+  },
+  "target_config": {
+    "item_status": [],
+    "customer": [],
+    "purchase_month": [],
+    "platform": [],
+    "channel": [],
+    "category": [],
+    "payment_method": "",
+    "language": "",
+    "repeat_buyer": "Range",
+    "item_count": "Range"
+  },
+  "campaign_config": {
+    "date": "mm/dd/yyyy",
+    "text": {
+      "arabic": "arabic text",
+      "english": "english text"
+    }
+  },
+
+  "timestamp": "datetime, time at which the campaign was registered from tool",
+  "name": "Optional name given at tool, defaults to Untitled",
+  "description": "Optional description given at tool, defaults to empty string",
+
+  "job": {
+    "status": "Pending -> Registered -> Data Loaded -> Processing -> Done",
+    "id": "Tool job id",
+    "file_link": "The file link once created",
+    "report": {
+      "customer_count": 100,
+      "sms_sent": 10,
+      "sms_failed": 10,
+      "errors": 2
+    }
+  }
+}

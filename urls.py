@@ -1,14 +1,14 @@
 from django.conf.urls import url, patterns
 from . import api
 from httpproxy.views import HttpProxy
-from . import interfaceApi, blockApi
+from . import interfaceApi, blockApi, toolApi
 
 urlpatterns = patterns(
     '',
     url(r'^$', api.test, name='test'),
     url(r'^hproxy/(?P<url>.*)$', HttpProxy.as_view(base_url='http://hymnary.org/')),
 
-    url(r'^query', interfaceApi.query, name='query'),
+    url(r'^query', toolApi.get_pipeline, name='query'),
 
     url(r'^block_list/block', blockApi.block, name='block'),
     url(r'^block_list', blockApi.get_blocked, name='get_blocked'),

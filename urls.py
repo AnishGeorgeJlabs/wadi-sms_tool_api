@@ -2,7 +2,6 @@ from django.conf.urls import url, patterns
 from . import api
 from httpproxy.views import HttpProxy
 from . import interfaceApi, blockApi
-from utility import uApi
 
 urlpatterns = patterns(
     '',

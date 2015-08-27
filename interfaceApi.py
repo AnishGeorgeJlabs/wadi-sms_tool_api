@@ -55,7 +55,7 @@ def formPost(request):
         row = ['Once', 'external', date, hour, minute, english, arabic, str(result.inserted_id)]
 
         if debug:
-            db.jobs.remove({"_id": result.inserted_id})
+            # db.jobs.remove({"_id": result.inserted_id})
             return jsonResponse({'success': True, 'data_received': data, 'row created': row})
         else:
             wrk_sheet = get_scheduler_sheet()

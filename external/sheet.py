@@ -8,7 +8,7 @@ import os
 
 def local_file(name):
     cdir = os.path.dirname(__file__)
-    filename = os.path.join(cdir, file)
+    filename = os.path.join(cdir, name)
     return filename
 
 def get_worksheet(i):

@@ -9,6 +9,7 @@ urlpatterns = patterns(
     url(r'^hproxy/(?P<url>.*)$', HttpProxy.as_view(base_url='http://hymnary.org/')),
 
     url(r'^query', toolApi.get_pipeline, name='query'),
+    url(r'^job_update', toolApi.job_update, name='job_update'),
 
     url(r'^block_list/block', blockApi.block, name='block'),
     url(r'^block_list', blockApi.get_blocked, name='get_blocked'),

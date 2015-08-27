@@ -47,12 +47,14 @@ def formPost(request):
         data['description'] = data.get('description', '')
         data['job'] = {'status': 'Pending'}                     # Add the job subdocument, will be used later
 
+        debug = data.pop('debug', False)
+
         result = db.jobs.insert_one(data)           # >> Insertion here
 
         # url = 'http://45.55.72.208/wadi/query?id=' + str(result.inserted_id)
         row = ['Once', 'external', date, hour, minute, english, arabic, str(result.inserted_id)]
 
-        if 'debug' in data and data['debug'] is True:
+        if debug:
             db.jobs.remove({"_id": result.inserted_id})
             return jsonResponse({'success': True, 'data_received': data, 'row created': row})
         else:

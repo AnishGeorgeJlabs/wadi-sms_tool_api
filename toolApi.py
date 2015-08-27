@@ -2,6 +2,7 @@ from data import db, jsonResponse
 from django.http import Http404
 import calendar
 from datetime import datetime
+import json
 from bson.objectid import ObjectId
 
 monthDict = dict((v, k) for k,v in enumerate(calendar.month_name))
@@ -37,3 +38,33 @@ def get_pipeline(request):
         return jsonResponse({"pipeline": pipeline, "options": options})
     else:
         raise Http404
+
+def job_update(request):
+    """ API endpoint for sms tool to update job status and all of that """
+
+    if request.method == 'GET':
+        query_dict = request.GET
+    else:
+        query_dict = json.loads(request.body)
+
+    if 'id' in query_dict:
+        search = {"_id": ObjectId(query_dict['id'])}
+    else:
+        return jsonResponse({"success": False})
+
+    update = {}
+
+    for key in ['status', 't_id', 'file_link']:
+        if key in query_dict:
+            update['job.'+key] = query_dict[key]
+
+    for key in ['customer_count', 'sms_sent', 'sms_failed', 'errors']:
+        if key in query_dict:
+            update['job.report.'+key] = query_dict[key]
+
+    if not update:
+        return jsonResponse({"success": False})
+    else:
+        db.jobs.update_one(search, {"$set": update})
+        return jsonResponse({"success": True})
+

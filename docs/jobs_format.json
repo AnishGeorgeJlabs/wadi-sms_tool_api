@@ -28,7 +28,7 @@
 
   "job": {
     "status": "Pending -> Registered -> Data Loaded -> Processing -> Done",
-    "id": "Tool job id",
+    "t_id": "Tool job id",
     "file_link": "The file link once created",
     "report": {
       "customer_count": 100,

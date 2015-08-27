@@ -1,0 +1,11 @@
+{
+  "id": "object ID, this or the t_id below",
+  "t_id": 32,
+  "file_link": "link to the final file",
+  "status": "Current status",
+
+  "customer_count": 31,
+  "sms_sent": 10,
+  "sms_failed": 51,
+  "errors": 0
+}

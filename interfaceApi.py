@@ -24,9 +24,7 @@ def login(request):
 
 @csrf_exempt
 def formPost(request):
-    """
-    Form submission api
-    """
+    """ Form submission api """
     try:
         data = json.loads(request.body)
         # Do processing here
@@ -38,13 +36,18 @@ def formPost(request):
         minute = time.minute
         english = campaign['text']['english']
         arabic = campaign['text']['arabic']
+
         if len(english.strip()) == 0:
             english = '_'
         if len(arabic.strip()) == 0:
             arabic = '_'
-        data['timestamp'] = datetime.now()
 
-        result = db.jobs.insert_one(data)
+        data['timestamp'] = datetime.now()
+        data['name'] = data.get('name', 'Untitled')             # Add name and description
+        data['description'] = data.get('description', '')
+        data['job'] = {'status': 'Pending'}                     # Add the job subdocument, will be used later
+
+        result = db.jobs.insert_one(data)           # >> Insertion here
 
         url = 'http://45.55.72.208/wadi/query?id=' + str(result.inserted_id)
         row = ['Once', 'external', date, hour, minute, english, arabic, url]

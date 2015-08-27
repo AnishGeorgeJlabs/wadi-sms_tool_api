@@ -11,6 +11,7 @@ lasttouch_dict = (db.form.find_one({"operation": "channel"}, {"regex": True}))['
 def get_pipeline(request):
     """
     Get the pipeline and options for the wadi system
+    Refer docs/jobs_format.json
     """
     id = request.GET['id']
     obj = db.jobs.find_one({"_id": ObjectId(id)})
@@ -40,7 +41,10 @@ def get_pipeline(request):
         raise Http404
 
 def job_update(request):
-    """ API endpoint for sms tool to update job status and all of that """
+    """
+    API endpoint for sms tool to update job status and all of that
+    Refer docs/status_update_format.json
+    """
 
     if request.method == 'GET':
         query_dict = request.GET

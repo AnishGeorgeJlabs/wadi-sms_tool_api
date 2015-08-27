@@ -49,8 +49,8 @@ def formPost(request):
 
         result = db.jobs.insert_one(data)           # >> Insertion here
 
-        url = 'http://45.55.72.208/wadi/query?id=' + str(result.inserted_id)
-        row = ['Once', 'external', date, hour, minute, english, arabic, url]
+        # url = 'http://45.55.72.208/wadi/query?id=' + str(result.inserted_id)
+        row = ['Once', 'external', date, hour, minute, english, arabic, str(result.inserted_id)]
 
         if 'debug' in data and data['debug'] is True:
             db.jobs.remove({"_id": result.inserted_id})

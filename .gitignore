@@ -1,4 +1,6 @@
 # Byte-compiled / optimized / DLL files
+.idea
+wadi-sms_tool_api.iml
 __pycache__/
 *.py[cod]
 

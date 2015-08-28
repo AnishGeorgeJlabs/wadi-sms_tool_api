@@ -23,7 +23,7 @@ def get_pipeline(request):
             new_api = True
             complete = options.copy()
             options = dict(map(
-                lambda kv: (kv[0], k[1]['value']),
+                lambda kv: (kv[0], kv[1]['value']),
                 options.items()
             ))
 

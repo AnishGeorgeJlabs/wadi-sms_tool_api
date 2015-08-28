@@ -3,6 +3,10 @@
     "$oid": "55cb41d821aaec0ef4ac11f4"
   },
   "target_config": {
+    "operation": {
+      "value": "Whatever",
+      "co_type": "required | additional"
+    },
     "item_status": [],
     "customer": [],
     "purchase_month": [],

@@ -17,6 +17,16 @@ def get_pipeline(request):
     obj = db.jobs.find_one({"_id": ObjectId(id)})
     if obj:
         options = obj['target_config']
+        if not options or not isinstance(options[options.keys()[0]], dict):
+            new_api = False
+        else:
+            new_api = True
+            complete = options.copy()
+            options = dict(map(
+                lambda kv: (kv[0], k[1]['value']),
+                options.items()
+            ))
+
         # Customisation ----------------- #
         if 'customer' not in options:
             options['mode'] = 'all'
@@ -33,8 +43,17 @@ def get_pipeline(request):
         if 'channel' in options:
             options['channel'] = map(lambda k: lasttouch_dict[k], options['channel'])
         # ------------------------------- #
-        pipeline = [k for k, v in options.items() if k != 'mode']
-        pipeline.append('customer')
+
+        if new_api:
+            pipeline = {
+                'required': [],
+                'additional': []
+            }
+            for k, v in complete.items():
+                pipeline[v['co_type']].append(k)
+        else:
+            pipeline = [k for k, v in options.items() if k != 'mode']
+            pipeline.append('customer')
 
         return jsonResponse({"pipeline": pipeline, "options": options})
     else:

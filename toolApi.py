@@ -12,6 +12,9 @@ def get_pipeline(request):
     """
     Get the pipeline and options for the wadi system
     Refer docs/jobs_format.json
+
+    Currently supports both the new and the old api. Future releases will deprecate the old
+    pipeline method
     """
     id = request.GET['id']
     obj = db.jobs.find_one({"_id": ObjectId(id)})

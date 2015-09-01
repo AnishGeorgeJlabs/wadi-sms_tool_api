@@ -71,7 +71,9 @@ def block(request):
     else:
         main_data = json.loads(request.body)
 
-    if isinstance(main_data, dict):
+    if 'data' in main_data:
+        main_data = main_data['data']
+    else:
         main_data = [main_data]
 
     res = []

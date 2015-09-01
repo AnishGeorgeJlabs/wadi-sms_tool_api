@@ -165,7 +165,7 @@ def _block_using_csv(cvlist, email_index=0, phone_index=1, lan_index=2):
 @csrf_exempt
 def block_list_csv(request):
     if request.method == 'POST' and 'file' in request.FILES:
-        reader = csv.reader(request.Files['file'])
+        reader = csv.reader(request.FILES['file'])
         ecount, pcount = _block_using_csv(list(reader)[1:])
         return jsonResponse({"success": True, "emails blocked": ecount, "phones blocked": pcount})
     else:
@@ -174,7 +174,7 @@ def block_list_csv(request):
 @csrf_exempt
 def dummy_block_list_csv(request):
     if request.method == 'POST' and 'file' in request.FILES:
-        reader = csv.reader(request.Files['file'])
+        reader = csv.reader(request.FILES['file'])
         return jsonResponse({"success": True, "data": list(reader)[1:]})
     else:
         return jsonResponse({"success": False, "error": "No file"})

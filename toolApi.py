@@ -2,6 +2,7 @@ from data import db, jsonResponse
 from django.http import Http404
 import calendar
 from datetime import datetime
+from django.views.decorators.csrf import csrf_exempt
 import json
 from bson.objectid import ObjectId
 
@@ -65,6 +66,7 @@ def get_pipeline(request):
     else:
         raise Http404
 
+@csrf_exempt
 def job_update(request):
     """
     API endpoint for sms tool to update job status and all of that

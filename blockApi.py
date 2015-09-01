@@ -171,6 +171,7 @@ def block_list_csv(request):
     else:
         return jsonResponse({"success": False, "error": "No file"})
 
+@csrf_exempt
 def dummy_block_list_csv(request):
     if request.method == 'POST' and 'file' in request.FILES:
         reader = csv.reader(request.Files['file'])

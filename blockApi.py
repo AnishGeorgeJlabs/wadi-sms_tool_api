@@ -5,6 +5,53 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime
 
+
+def _block_email(email):
+    if email is not None and db.blocked_email.count({"email": email}) == 0:
+        db.blocked_email.insert_one({
+            "email": email,
+            "timestamp": datetime.now()
+        })
+        return True
+    return False
+
+
+def _block_phone(phone, language):
+    if language is None or language == '':
+        lan_list = ['English', 'Arabic']
+    elif isinstance(language, list):
+        lan_list = language
+    else:
+        lan_list = language.split(',')
+
+    flist = map(
+        lambda l: 'English' if 'eng' in l.lower() else 'Arabic',
+        lan_list
+    )
+
+    if db.blocked_phone.count({"phone": phone}) == 0:
+        db.blocked_phone.insert_one({
+            "phone": phone,
+            "language": flist,
+            "timestamp": datetime.now()
+        })
+        return True
+    else:
+        db.blocked_phone.update_one(
+            {
+                "phone": phone
+            },
+            {
+                "$addToSet": {
+                    "language": {"$each": flist}
+                },
+                "$set": {
+                    "timestamp": datetime.now()
+                }
+            })
+        return True
+
+
 @csrf_exempt
 def block(request):
     """
@@ -20,55 +67,26 @@ def block(request):
     tested on Wed, 26 Aug, 10:45 PM
     """
     if request.method == 'GET':
-        data = request.GET
+        main_data = request.GET
     else:
-        data = json.loads(request.body)
+        main_data = json.loads(request.body)
 
-    res = {}
-    # ----- Email ------ #
-    if 'email' in data and db.blocked_email.count({"email": data['email']}) == 0:
-        resEm = db.blocked_email.insert_one({
-            "email": data['email'],
-            "timestamp": datetime.now()
-        })
-        res['email entry'] = str(resEm.inserted_id)
+    if isinstance(main_data, dict):
+        main_data = [main_data]
 
-    # ----- Phone ------ #
-    if 'phone' in data:
-        ph = data['phone']
-        if 'language' in data:
-            if isinstance(data['language'], list):
-                lan_list = data['language']
-            else:
-                lan_list = data['language'].split(',')
-            language = map(
-                lambda l: 'English' if 'eng' in l.lower() else 'Arabic',
-                lan_list
-            )
-        else:
-            language = ['English', 'Arabic']
+    res = []
+    for data in main_data:
+        d = {}
+        # ----- Email ------ #
+        if 'email' in data:
+            d['email entry'] = _block_email(data['email'])
 
-        if db.blocked_phone.count({"phone": ph}) == 0:
-            resPh = db.blocked_phone.insert_one({
-                "phone": ph,
-                "language": language,
-                "timestamp": datetime.now()
-            })
-            res['phone entry'] = str(resPh.inserted_id)
-        else:
-            db.blocked_phone.update_one(
-                {
-                    "phone": ph
-                },
-                {
-                    "$addToSet": {
-                        "language": {"$each": language}
-                    },
-                    "$set": {
-                        "timestamp": datetime.now()
-                    }
-                })
-            res['phone entry'] = 'Updated'
+        # ----- Phone ------ #
+        if 'phone' in data:
+            d['phone entry'] = _block_phone(data['phone'], data.get('language'))
+
+        res.append(d)
+
     if 'pretty' in data and data['pretty'] not in [False, 'false']:
         if not res:
             return HttpResponse("There seems to be some problem. You seem to be already unsubscribed")
@@ -123,3 +141,19 @@ def get_blocked(request):
             "success": False,
             "error": "Unknown type"
         })
+
+
+def _block_using_csv(cvlist, email_index=0, phone_index=1, lan_index=2):
+    email_blocked = 0
+    phone_blocked = 0
+
+    for row in cvlist:
+        if row[email_index] != '' and \
+                _block_email(row[email_index]):
+            email_blocked += 1
+
+        if row[phone_index] != '' and \
+                _block_phone(row[phone_index], row[lan_index]):
+            phone_blocked += 1
+
+    return email_blocked, phone_blocked

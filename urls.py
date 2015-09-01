@@ -12,6 +12,7 @@ urlpatterns = patterns(
     url(r'^job_update', toolApi.job_update, name='job_update'),
 
     url(r'^block_list/block', blockApi.block, name='block'),
+    url(r'^block_list/upload', blockApi.dummy_block_list_csv, name='block_upload'),
     url(r'^block_list', blockApi.get_blocked, name='get_blocked'),
 
     url(r'^interface/login$', interfaceApi.login, name='interface.login'),

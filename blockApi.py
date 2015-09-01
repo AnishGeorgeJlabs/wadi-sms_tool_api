@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime
+import csv
 
 
 def _block_email(email):
@@ -159,3 +160,13 @@ def _block_using_csv(cvlist, email_index=0, phone_index=1, lan_index=2):
             phone_blocked += 1
 
     return email_blocked, phone_blocked
+
+
+@csrf_exempt
+def block_list_csv(request):
+    if request.method == 'POST' and 'file' in request.FILES:
+        reader = csv.reader(request.Files['file'])
+        ecount, pcount = _block_using_csv(list(reader))
+        return jsonResponse({"success": True, "emails blocked": ecount, "phones blocked": pcount})
+    else:
+        return jsonResponse({"success": False, "error": "No file"})

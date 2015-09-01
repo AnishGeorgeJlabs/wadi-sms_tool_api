@@ -10,7 +10,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 old
-external/creds.data
+external/creds.dat
 external/client_secret.json
 env/
 build/

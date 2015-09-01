@@ -30,6 +30,7 @@ def formPost(request):
         # Do processing here
 
         campaign = data['campaign_config']
+        repeat = campaign.get('repeat', 'Once')
         date = campaign['date']
         time = datetime.strptime(campaign['time'], "%H:%M")
         hour = time.hour
@@ -52,7 +53,7 @@ def formPost(request):
         result = db.jobs.insert_one(data)           # >> Insertion here
 
         # url = 'http://45.55.72.208/wadi/query?id=' + str(result.inserted_id)
-        row = ['Once', 'external', date, hour, minute, english, arabic, str(result.inserted_id)]
+        row = [repeat, 'external', date, hour, minute, english, arabic, str(result.inserted_id)]
 
         if debug:
             # db.jobs.remove({"_id": result.inserted_id})

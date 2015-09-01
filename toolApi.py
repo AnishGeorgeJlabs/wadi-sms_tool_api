@@ -2,6 +2,7 @@ from data import db, jsonResponse
 from django.http import Http404
 import calendar
 from datetime import datetime
+from django.views.decorators.csrf import csrf_exempt
 import json
 from bson.objectid import ObjectId
 
@@ -12,11 +13,24 @@ def get_pipeline(request):
     """
     Get the pipeline and options for the wadi system
     Refer docs/jobs_format.json
+
+    Currently supports both the new and the old api. Future releases will deprecate the old
+    pipeline method
     """
     id = request.GET['id']
     obj = db.jobs.find_one({"_id": ObjectId(id)})
     if obj:
         options = obj['target_config']
+        if not options or not isinstance(options[options.keys()[0]], dict):
+            new_api = False
+        else:
+            new_api = True
+            complete = options.copy()
+            options = dict(map(
+                lambda kv: (kv[0], kv[1]['value']),
+                options.items()
+            ))
+
         # Customisation ----------------- #
         if 'customer' not in options:
             options['mode'] = 'all'
@@ -33,13 +47,26 @@ def get_pipeline(request):
         if 'channel' in options:
             options['channel'] = map(lambda k: lasttouch_dict[k], options['channel'])
         # ------------------------------- #
-        pipeline = [k for k, v in options.items() if k != 'mode']
-        pipeline.append('customer')
+
+        if new_api:
+            pipeline = {
+                'required': [],
+                'additional': []
+            }
+            complete.pop('customer', '')
+            for k, v in complete.items():
+                pipeline[v['co_type']].append(k)
+            pipeline['required'].append('customer')
+
+        else:
+            pipeline = [k for k, v in options.items() if k != 'mode']
+            pipeline.append('customer')
 
         return jsonResponse({"pipeline": pipeline, "options": options})
     else:
         raise Http404
 
+@csrf_exempt
 def job_update(request):
     """
     API endpoint for sms tool to update job status and all of that

@@ -88,7 +88,7 @@ def get_jobs(request):
         {"$project": {
             "name": 1, "description": 1,
             "_id": 0,
-            "id": "$_id.$oid",
+            "id": "$_id.oid",
             "status": "$job.status",
             "file": "$job.file_link",
             "t_id": "$job.t_id",

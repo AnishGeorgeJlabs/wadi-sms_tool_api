@@ -79,3 +79,18 @@ def get_sample_form_data(request):
     """ Just for testing """
     data = db.form.find({"operation": {"$in": ["item_status", "payment_method", "repeat_buyer"]}}, {"_id": False, "regex": False})
     return jsonResponse(data)
+
+
+def get_jobs(request):
+    jobs = db.jobs.aggregate([
+        {"$match": {"job": {"$exists": True}}},
+        {"$sort": {"timestamp": -1}},
+        {"$project": {
+            "name": 1, "description": 1,
+            "status": "$job.status",
+            "file": "$job.file_link",
+            "t_id": "$job.t_id",
+            "count": "$job.report.customer_count"
+        }}
+    ])
+    return jsonResponse({"success": True, "data": list(jobs)})

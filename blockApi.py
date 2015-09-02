@@ -167,7 +167,15 @@ def block_list_csv(request):
     if request.method == 'POST' and 'file' in request.FILES:
         reader = csv.reader(request.FILES['file'])
         ecount, pcount = _block_using_csv(list(reader)[1:])
-        return jsonResponse({"success": True, "emails blocked": ecount, "phones blocked": pcount})
+        total_ecount = db.blocked_email.count()
+        total_pcount = db.blocked_phone.count()
+        return jsonResponse({"success": True, "blocked": {
+            "email": ecount,
+            "phone": pcount
+        }, "total_blocked": {
+            "email": total_ecount,
+            "phone": total_pcount
+        }})
     else:
         return jsonResponse({"success": False, "error": "No file"})
 

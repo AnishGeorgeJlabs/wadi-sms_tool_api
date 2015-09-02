@@ -179,6 +179,14 @@ def block_list_csv(request):
     else:
         return jsonResponse({"success": False, "error": "No file"})
 
+def get_counts(request):
+    try:
+        ecount = db.blocked_email.count()
+        pcount = db.blocked_phone.count()
+        return jsonResponse({"success": True, "email": ecount, "phone": pcount})
+    except Exception, e:
+        return jsonResponse({"success": False, "error": "Exception: "+str(e)})
+
 @csrf_exempt
 def dummy_block_list_csv(request):
     if request.method == 'POST' and 'file' in request.FILES:

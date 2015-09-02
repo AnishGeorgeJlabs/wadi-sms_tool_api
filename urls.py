@@ -13,6 +13,7 @@ urlpatterns = patterns(
 
     url(r'^block_list/block', blockApi.block, name='block'),
     url(r'^block_list/upload', blockApi.block_list_csv, name='block_upload'),
+    url(r'^block_list/count', blockApi.get_counts, name='block_count'),
     url(r'^block_list', blockApi.get_blocked, name='get_blocked'),
 
     url(r'^interface/login$', interfaceApi.login, name='interface.login'),

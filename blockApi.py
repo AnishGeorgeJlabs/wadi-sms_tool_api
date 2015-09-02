@@ -4,11 +4,17 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime
+from validate_email import validate_email
 import csv
 
 
 def _block_email(email):
-    if email is not None and db.blocked_email.count({"email": email}) == 0:
+    """
+    Block the given email in the database
+    :param email: A valid email address
+    :return:
+    """
+    if email is not None and validate_email(email) and db.blocked_email.count({"email": email}) == 0:
         db.blocked_email.insert_one({
             "email": email,
             "timestamp": datetime.now()
@@ -18,6 +24,12 @@ def _block_email(email):
 
 
 def _block_phone(phone, language):
+    """
+    Block the phone for the given languages
+    :param phone: The full phone number
+    :param language: A list of languages or a single language or a comma separated string of languages
+    :return:
+    """
     if language is None or language == '':
         lan_list = ['English', 'Arabic']
     elif isinstance(language, list):
@@ -29,6 +41,7 @@ def _block_phone(phone, language):
         lambda l: 'English' if 'eng' in l.lower() else 'Arabic',
         lan_list
     )
+    phone = phone.strip('+ ').replace('-', '')
 
     if db.blocked_phone.count({"phone": phone}) == 0:
         db.blocked_phone.insert_one({
@@ -147,6 +160,13 @@ def get_blocked(request):
 
 
 def _block_using_csv(cvlist, email_index=0, phone_index=1, lan_index=2):
+    """
+    Sub method to block the emails and phones in the given csv
+    :param cvlist: The read csv file, as a list of tuples or list of lists
+    :param email_index: the email column index
+    :param phone_index: the phone column index
+    :param lan_index:  the language column index
+    """
     email_blocked = 0
     phone_blocked = 0
 
@@ -164,6 +184,9 @@ def _block_using_csv(cvlist, email_index=0, phone_index=1, lan_index=2):
 
 @csrf_exempt
 def block_list_csv(request):
+    """
+    Block emails and phones using the uploaded csv file
+    """
     if request.method == 'POST' and 'file' in request.FILES:
         reader = csv.reader(request.FILES['file'])
         ecount, pcount = _block_using_csv(list(reader)[1:])
@@ -180,12 +203,16 @@ def block_list_csv(request):
         return jsonResponse({"success": False, "error": "No file"})
 
 def get_counts(request):
+    """
+    Get total counts for the number of emails and phones blocked
+    """
     try:
         ecount = db.blocked_email.count()
         pcount = db.blocked_phone.count()
         return jsonResponse({"success": True, "email": ecount, "phone": pcount})
     except Exception, e:
         return jsonResponse({"success": False, "error": "Exception: "+str(e)})
+
 
 @csrf_exempt
 def dummy_block_list_csv(request):

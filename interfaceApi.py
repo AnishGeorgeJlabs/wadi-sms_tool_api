@@ -60,9 +60,7 @@ def form_post(request):
             # db.jobs.remove({"_id": result.inserted_id})
             return jsonResponse({'success': True, 'data_received': data, 'row created': row})
         else:
-            wrk_sheet = get_scheduler_sheet()
-            size = len(wrk_sheet.get_all_values())
-            wrk_sheet.insert_row(row, size + 1)
+            _append_to_sheet(row)
             return jsonResponse({'success': True})
 
     except Exception, e:
@@ -97,3 +95,21 @@ def get_jobs(request):
         }}
     ])
     return jsonResponse({"success": True, "data": list(jobs)})
+
+def _append_to_sheet(row):
+    wrk_sheet = get_scheduler_sheet()
+    size = len(wrk_sheet.get_all_values())
+    wrk_sheet.insert_row(row, size + 1)
+
+@csrf_exempt
+def schedule_testing_send(request):
+    try:
+        data = json.loads(request.body)
+        english = data.get('english', '_')
+        arabic = data.get('arabic', '_')
+        row = ['Immediately', 'testing', '_', '', '_', '_', english, arabic]
+        _append_to_sheet(row)
+        return jsonResponse({"success": True})
+
+    except Exception, e:
+        return jsonResponse({"success": False, "error": "Exception: "+str(e)})

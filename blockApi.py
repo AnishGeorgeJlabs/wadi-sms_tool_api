@@ -23,7 +23,7 @@ def _block_phone(phone, language):
     elif isinstance(language, list):
         lan_list = language
     else:
-        lan_list = language.split(',')
+        lan_list = [x.strip() for x in language.split(',')]
 
     flist = map(
         lambda l: 'English' if 'eng' in l.lower() else 'Arabic',
@@ -156,7 +156,7 @@ def _block_using_csv(cvlist, email_index=0, phone_index=1, lan_index=2):
             email_blocked += 1
 
         if row[phone_index] != '' and \
-                _block_phone(row[phone_index], row[lan_index]):
+                _block_phone(str(row[phone_index]), row[lan_index]):
             phone_blocked += 1
 
     return email_blocked, phone_blocked

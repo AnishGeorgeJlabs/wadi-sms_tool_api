@@ -86,7 +86,9 @@ def get_jobs(request):
         {"$match": {"job": {"$exists": True}}},
         {"$sort": {"timestamp": -1}},
         {"$project": {
-            "name": 1, "description": 1,
+            "name": 1, "description": 1, "timestamp": 1,
+            "start_date": "$campaign_config.date",
+            "repeat": "$campaign_config.repeat",
             "status": "$job.status",
             "file": "$job.file_link",
             "t_id": "$job.t_id",

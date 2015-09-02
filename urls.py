@@ -17,7 +17,7 @@ urlpatterns = patterns(
     url(r'^block_list', blockApi.get_blocked, name='get_blocked'),
 
     url(r'^interface/login$', interfaceApi.login, name='interface.login'),
-    url(r'^interface/post$', interfaceApi.formPost, name='interface.post'),
+    url(r'^interface/post$', interfaceApi.form_post, name='interface.post'),
     url(r'^interface/form$', interfaceApi.get_form_data, name='interface.form'),
     url(r'^interface/dummy/form$', interfaceApi.get_sample_form_data, name='interface.sample_form'),
     url(r'^configuration/(?P<namespace>\w+)/(?P<key>.*)$', api.get_conf, name='configurations'),

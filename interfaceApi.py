@@ -23,7 +23,7 @@ def login(request):
 
 
 @csrf_exempt
-def formPost(request):
+def form_post(request):
     """ Form submission api """
     try:
         data = json.loads(request.body)
@@ -76,6 +76,6 @@ def get_form_data(request):
     return jsonResponse(data)
 
 def get_sample_form_data(request):
-    """ TODO """
+    """ Just for testing """
     data = db.form.find({"operation": {"$in": ["item_status", "payment_method", "repeat_buyer"]}}, {"_id": False, "regex": False})
     return jsonResponse(data)

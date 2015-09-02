@@ -87,7 +87,6 @@ def get_jobs(request):
         {"$sort": {"timestamp": -1}},
         {"$project": {
             "name": 1, "description": 1,
-            "id": "$_id.oid",
             "status": "$job.status",
             "file": "$job.file_link",
             "t_id": "$job.t_id",

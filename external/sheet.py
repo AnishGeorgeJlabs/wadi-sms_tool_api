@@ -1,7 +1,7 @@
 import httplib2
 # Do OAuth2 stuff to create credentials object
 from oauth2client.file import Storage
-from oauth2client.client import flow_from_clientsecrets
+from oauth2client.client import flow_from_clientsecrets, SignedJwtAssertionCredentials
 from oauth2client import tools
 import gspread
 import os
@@ -12,6 +12,7 @@ def local_file(name):
     return filename
 
 def get_worksheet(i):
+    '''
     storage = Storage(local_file("creds.dat"))
     credentials = storage.get()
     if credentials is None or credentials.invalid:
@@ -20,6 +21,12 @@ def get_worksheet(i):
         credentials = tools.run_flow(flow, storage, flags)
     if credentials.access_token_expired:
         credentials.refresh(httplib2.Http())
+    gc = gspread.authorize(credentials)
+    '''
+    json_key = json.load(open(local_file('wadi_key.json')))
+    scope = ['https://spreadsheets.google.com/feeds']
+
+    credentials = SignedJwtAssertionCredentials(json_key['client_email'], json_key['private_key'], scope)
     gc = gspread.authorize(credentials)
 
     wks = gc.open_by_key('144fuYSOgi8md4n2Ezoj9yNMi6AigoXrkHA9rWIF0EDw')

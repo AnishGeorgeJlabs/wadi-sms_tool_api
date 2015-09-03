@@ -13,8 +13,7 @@ def local_file(name):
     return filename
 
 def get_worksheet(i):
-    '''
-    storage = Storage(local_file("creds.dat"))
+    storage = Storage(local_file("creds.data"))
     credentials = storage.get()
     if credentials is None or credentials.invalid:
         flags = tools.argparser.parse_args(args=[])
@@ -22,16 +21,16 @@ def get_worksheet(i):
         credentials = tools.run_flow(flow, storage, flags)
     if credentials.access_token_expired:
         credentials.refresh(httplib2.Http())
-    gc = gspread.authorize(credentials)
+
     '''
     json_key = json.load(open(local_file('wadi_key.json')))
     scope = ['https://spreadsheets.google.com/feeds']
 
     credentials = SignedJwtAssertionCredentials(json_key['client_email'], json_key['private_key'], scope)
+    '''
     gc = gspread.authorize(credentials)
 
     wks = gc.open_by_key('144fuYSOgi8md4n2Ezoj9yNMi6AigoXrkHA9rWIF0EDw')
-    # wks = gc.open_by_url('https://docs.google.com/spreadsheets/d/144fuYSOgi8md4n2Ezoj9yNMi6AigoXrkHA9rWIF0EDw/edit?usp=sharing')
     return wks.get_worksheet(i)
 
 def get_scheduler_sheet():

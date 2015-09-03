@@ -21,20 +21,6 @@ def login(request):
     except Exception, e:
         return basic_error(e)
 
-@csrf_exempt
-def test_message(request):
-    try:
-        data = json.loads(request.body)
-        english = data.get('english', '_')
-        arabic = data.get('arabic', '_')
-        row = ['Immediately', 'testing', datetime.now().strftime("%m/%d/%Y"), '', '1', '1', english, arabic]
-
-        wrk_sheet = get_scheduler_sheet()
-        size = len(wrk_sheet.get_all_values())
-        wrk_sheet.insert_row(row, size + 1)
-        return jsonResponse({"success": True, "data": data})
-    except Exception, e:
-        return basic_error(e)
 
 @csrf_exempt
 def form_post(request):

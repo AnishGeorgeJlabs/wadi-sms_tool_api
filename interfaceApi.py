@@ -27,7 +27,7 @@ def test_message(request):
         data = json.loads(request.body)
         english = data.get('english', '_')
         arabic = data.get('arabic', '_')
-        row = ['Immediately', 'testing', '_', '', '_', '_', english, arabic]
+        row = ['Immediately', 'testing', datetime.now().strftime("%m/%d/%Y"), '', '1', '1', english, arabic]
 
         wrk_sheet = get_scheduler_sheet()
         size = len(wrk_sheet.get_all_values())

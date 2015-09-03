@@ -21,6 +21,13 @@ def login(request):
     except Exception, e:
         return basic_error(e)
 
+@csrf_exempt
+def test_message(request):
+    try:
+        data = json.loads(request.body)
+        return jsonResponse({"success": True, "data": data})
+    except Exception, e:
+        return basic_error(e)
 
 @csrf_exempt
 def form_post(request):
@@ -112,4 +119,4 @@ def schedule_testing_send(request):
         return jsonResponse({"success": True})
 
     except Exception, e:
-        return jsonResponse({"success": False, "error": "Exception: "+str(e)})
+        return basic_error(e)

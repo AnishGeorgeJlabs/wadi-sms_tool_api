@@ -28,7 +28,10 @@ def test_message(request):
         english = data.get('english', '_')
         arabic = data.get('arabic', '_')
         row = ['Immediately', 'testing', '_', '', '_', '_', english, arabic]
-        _append_to_sheet(row)
+
+        wrk_sheet = get_scheduler_sheet()
+        size = len(wrk_sheet.get_all_values())
+        wrk_sheet.insert_row(row, size + 1)
         return jsonResponse({"success": True, "data": data})
     except Exception, e:
         return basic_error(e)

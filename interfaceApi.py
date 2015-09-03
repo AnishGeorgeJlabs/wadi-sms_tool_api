@@ -25,6 +25,10 @@ def login(request):
 def test_message(request):
     try:
         data = json.loads(request.body)
+        english = data.get('english', '_')
+        arabic = data.get('arabic', '_')
+        row = ['Immediately', 'testing', '_', '', '_', '_', english, arabic]
+        _append_to_sheet(row)
         return jsonResponse({"success": True, "data": data})
     except Exception, e:
         return basic_error(e)

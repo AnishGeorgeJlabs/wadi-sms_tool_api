@@ -31,11 +31,18 @@ def form_post(request):
 
         campaign = data['campaign_config']
         repeat = campaign.get('repeat', 'Once')
-        date = campaign['date']
-        end_date = campaign.get('end_date', '')
-        time = datetime.strptime(campaign['time'], "%H:%M")
+
+        start_date = datetime.fromtimestamp(campaign.get['start_date'] / 1000).strftime("%m/%d/%Y")
+        if 'end_date' in campaign:
+            end_date = datetime.fromtimestamp(campaign['end_date'] / 1000).strftime("%m/%d/%Y")
+        else:
+            end_date = ''
+
+        time = datetime.fromtimestamp(campaign['time'] / 1000)
         hour = time.hour
         minute = time.minute
+
+
         english = campaign['text']['english']
         arabic = campaign['text']['arabic']
 
@@ -54,7 +61,7 @@ def form_post(request):
         result = db.jobs.insert_one(data)           # >> Insertion here
 
         # url = 'http://45.55.72.208/wadi/query?id=' + str(result.inserted_id)
-        row = [repeat, 'external', date, end_date, hour, minute, english, arabic, str(result.inserted_id)]
+        row = [repeat, 'external', start_date, end_date, hour, minute, english, arabic, str(result.inserted_id)]
 
         if debug:
             # db.jobs.remove({"_id": result.inserted_id})
@@ -86,7 +93,9 @@ def get_jobs(request):
         {"$sort": {"timestamp": -1}},
         {"$project": {
             "name": 1, "description": 1, "timestamp": 1,
-            "start_date": "$campaign_config.date",
+            "start_date": "$campaign_config.start_date",
+            "end_date": "$campaign_config.end_date",
+            "time": "$campaign_config.time",
             "repeat": "$campaign_config.repeat",
             "status": "$job.status",
             "file": "$job.file_link",

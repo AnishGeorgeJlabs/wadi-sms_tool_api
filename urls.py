@@ -18,7 +18,7 @@ urlpatterns = patterns(
 
     url(r'^interface/login$', interfaceApi.login, name='interface.login'),
     url(r'^interface/post$', interfaceApi.form_post, name='interface.post'),
-    url(r'^interface/test_campaign', interfaceApi.schedule_testing_send, name='interface.test_campaign'),
+    url(r'^interface/post/test$', interfaceApi.schedule_testing_send, name='interface.post_test'),
     url(r'^interface/form$', interfaceApi.get_form_data, name='interface.form'),
     url(r'^interface/jobs$', interfaceApi.get_jobs, name='interface.jobs'),
     url(r'^interface/dummy/form$', interfaceApi.get_sample_form_data, name='interface.sample_form'),

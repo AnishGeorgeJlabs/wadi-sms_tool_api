@@ -32,7 +32,7 @@ def form_post(request):
         campaign = data['campaign_config']
         repeat = campaign.get('repeat', 'Once')
 
-        start_date = datetime.fromtimestamp(campaign.get['start_date'] / 1000).strftime("%m/%d/%Y")
+        start_date = datetime.fromtimestamp(campaign['start_date'] / 1000).strftime("%m/%d/%Y")
         if 'end_date' in campaign:
             end_date = datetime.fromtimestamp(campaign['end_date'] / 1000).strftime("%m/%d/%Y")
         else:

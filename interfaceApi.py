@@ -141,7 +141,7 @@ def cancel_job(request):
             return jsonResponse({"success": False, "error": "Cannot find job, please give either an id or a t_id"})
 
         search.update({"job": {"$exists": True}})
-        job = db.jobs.find_one(search, {})
+        job = db.jobs.find_one(search, {"job": True})
 
         worksheet = get_scheduler_sheet()
 

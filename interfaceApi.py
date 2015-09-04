@@ -140,23 +140,30 @@ def cancel_job(request):
         else:
             return jsonResponse({"success": False, "error": "Cannot find job, please give either an id or a t_id"})
 
-        search.update({"job.sheet_row": {"$exists": True}})
-        job = db.jobs.find_one(search, {"job.sheet_row": True, "_id": False})
+        search.update({"job": {"$exists": True}})
+        job = db.jobs.find_one(search, {})
 
         worksheet = get_scheduler_sheet()
 
-        if job: # We know the exact row number
+        if not job:
+            return jsonResponse({"success": False, "error": "Cannot find job"})
+        elif 'sheet_row' in job['job']: # We know the exact row number
             worksheet.update_acell("J"+str(job['job']['sheet_row']), "Cancel")
         else:
             full = worksheet.get_all_records()
             if t_id == 0:
-                return jsonResponse({"success": False, "error": "Need the t_id in this case"})
+                t_id = job['job'].get('t_id', 0)
+
+            if t_id == 0:
+                return jsonResponse({"success": False, "error": "Need t_id"})
+
             t_id = str(t_id)
             for record in full:
                 if t_id == record['ID']:
                     row = full.index(record) + 2
                     worksheet.update_aceel("J"+str(row), "Cancel")
                     break
+        db.jobs.update_one({"_id": job['_id']}, {"$set": {"job.status": "Cancel"}})
         return jsonResponse({"success": True})
 
     except Exception, e:

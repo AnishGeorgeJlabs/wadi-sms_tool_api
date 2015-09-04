@@ -159,7 +159,7 @@ def cancel_job(request):
 
             t_id = str(t_id)
             for record in full:
-                if t_id == record['ID']:
+                if t_id == str(record['ID']):
                     row = full.index(record) + 2
                     worksheet.update_aceel("J"+str(row), "Cancel")
                     break

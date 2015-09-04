@@ -161,7 +161,7 @@ def cancel_job(request):
             for record in full:
                 if t_id == str(record['ID']):
                     row = full.index(record) + 2
-                    worksheet.update_aceel("J"+str(row), "Cancel")
+                    worksheet.update_acell("J"+str(row), "Cancel")
                     break
         db.jobs.update_one({"_id": job['_id']}, {"$set": {"job.status": "Cancel"}})
         return jsonResponse({"success": True})

@@ -3,6 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime
 from external.sheet import get_scheduler_sheet
+from bson.json_util import ObjectId
 
 
 @csrf_exempt
@@ -41,7 +42,6 @@ def form_post(request):
         time = datetime.fromtimestamp(campaign['time'] / 1000)
         hour = time.hour
         minute = time.minute
-
 
         english = campaign['text']['english']
         arabic = campaign['text']['arabic']
@@ -118,6 +118,45 @@ def schedule_testing_send(request):
         arabic = data.get('arabic', '_')
         row = ['Immediately', 'testing', '_', '', '_', '_', english, arabic]
         _append_to_sheet(row)
+        return jsonResponse({"success": True})
+
+    except Exception, e:
+        return basic_error(e)
+
+@csrf_exempt
+def cancel_job(request):
+    """
+    Cancel the given job
+    json body: { id: Object id, t_id: tool id }
+    """
+    try:
+        data = json.loads(request.body)
+        oid = data.get('id', data.get('oid', data.get('_id')))
+        t_id = int(data.get('t_id', 0))
+        if oid is not None:
+            search = {"_id": ObjectId(oid)}
+        elif t_id != 0:
+            search = {"job.t_id": t_id}
+        else:
+            return jsonResponse({"success": False, "error": "Cannot find job, please give either an id or a t_id"})
+
+        search.update({"job.sheet_row": {"$exists": True}})
+        job = db.jobs.find_one(search, {"job.sheet_row": True, "_id": False})
+
+        worksheet = get_scheduler_sheet()
+
+        if job: # We know the exact row number
+            worksheet.update_acell("J"+str(job['job']['sheet_row']), "Cancel")
+        else:
+            full = worksheet.get_all_records()
+            if t_id == 0:
+                return jsonResponse({"success": False, "error": "Need the t_id in this case"})
+            t_id = str(t_id)
+            for record in full:
+                if t_id == record['ID']:
+                    row = full.index(record) + 2
+                    worksheet.update_aceel("J"+str(row), "Cancel")
+                    break
         return jsonResponse({"success": True})
 
     except Exception, e:

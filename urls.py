@@ -17,7 +17,10 @@ urlpatterns = patterns(
     url(r'^block_list', blockApi.get_blocked, name='get_blocked'),
 
     url(r'^interface/login$', interfaceApi.login, name='interface.login'),
-    url(r'^interface/post$', interfaceApi.form_post, name='interface.post'),
+
+    url(r'^interface/job/new$', interfaceApi.form_post, name='interface.post'),
+    url(r'^interface/job/cancel$', interfaceApi.cancel_job, name='interface.cancel'),
+
     url(r'^interface/post/test$', interfaceApi.schedule_testing_send, name='interface.post_test'),
     url(r'^interface/form$', interfaceApi.get_form_data, name='interface.form'),
     url(r'^interface/jobs$', interfaceApi.get_jobs, name='interface.jobs'),

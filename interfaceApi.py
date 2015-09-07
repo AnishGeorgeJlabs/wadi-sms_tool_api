@@ -105,6 +105,18 @@ def get_jobs(request):
     ])
     return jsonResponse({"success": True, "data": list(jobs)})
 
+def get_segment_jobs(request):
+    lst = db.segment_jobs.aggregate([
+        {"$group": { "_id": "$master",
+                     "segments": {"$push": {
+                         "segment_number": "$segment_number",
+                         "text": "$text",
+                         "date": "$date",
+                         "status": "$job.status"
+                     }}}}
+    ])
+    return jsonResponse({"success": True, "data": lst})
+
 def _append_to_sheet(row):
     wrk_sheet = get_scheduler_sheet()
     size = len(wrk_sheet.get_all_values())
@@ -131,11 +143,11 @@ def post_segment_form(request):
         limits[-1][1] = total
 
         # Step 2, create db jobs for each segment
-        result = [
-
-        ]
+        result = []
+        sheet_rows = []
         timestamp = datetime.now()
         for i, segment in enumerate(segments):
+            date = segment['date']
             res = db.segment_jobs.insert_one({
                 "master": ObjectId(ref_job),
                 "timestamp": timestamp,
@@ -148,15 +160,24 @@ def post_segment_form(request):
                     "english": segment['english'],
                     "arabic": segment['arabic']
                 },
-                "date": segment['date'],
+                "date": date,
                 "job": {
                     "status": "pending"
                 }
             })
-            sheet_data = str(res.inserted_id) + (",%i,%i,%i" % (t_id, limits[i][0], limits[i][1]))
-            result.append(sheet_data)
+            oid_col = str(res.inserted_id) + (",%i,%i,%i" % (t_id, limits[i][0], limits[i][1]))
+            result.append(oid_col)
 
-        return jsonResponse({"success": True, "result": result})
+            # Creating the row
+            date = datetime.fromtimestamp(date / 1000)
+            start_date = datetime.strftime("%m/%d/%Y")
+            hour = date.hour
+            minute = date.minute
+
+            row = ['Once', 'segment', start_date, '', hour, minute, segment['english'], segment['arabic'], oid_col]
+            sheet_rows.append(row)
+
+        return jsonResponse({"success": True, "result": sheet_rows})
     except Exception, e:
         return basic_error(e)
 

@@ -110,6 +110,7 @@ def _append_to_sheet(row):
     size = len(wrk_sheet.get_all_values())
     wrk_sheet.insert_row(row, size + 1)
 
+@csrf_exempt
 def post_segment_form(request):
     try:
         data = json.loads(request.body)

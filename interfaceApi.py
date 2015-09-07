@@ -122,6 +122,7 @@ def post_segment_form(request):
         limits = [
             [sub_size*i, sub_size*(i+1)] for i in range(0, slen)
         ]
+        limits[-1][1] = slen
         return jsonResponse({"success": True, "limits": limits})
     except Exception, e:
         return basic_error(e)

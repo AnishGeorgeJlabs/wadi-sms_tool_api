@@ -96,6 +96,8 @@ def job_update(request):
     if not update:
         return jsonResponse({"success": False})
     else:
-        db.jobs.update_one(search, {"$set": update})
+        if db.jobs.count(search) > 0:
+            db.jobs.update_one(search, {"$set": update})
+        else:
+            db.segment_jobs.update_one(search, {"$set": update})
         return jsonResponse({"success": True})
-

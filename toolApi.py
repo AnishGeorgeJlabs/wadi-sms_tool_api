@@ -1,4 +1,4 @@
-from data import db, jsonResponse
+from data import db, jsonResponse, basic_failure, basic_success
 from django.http import Http404
 import calendar
 from datetime import datetime
@@ -78,11 +78,6 @@ def job_update(request):
     else:
         query_dict = json.loads(request.body)
 
-    if 'id' in query_dict:
-        search = {"_id": ObjectId(query_dict['id'])}
-    else:
-        return jsonResponse({"success": False})
-
     update = {}
 
     for key in ['status', 't_id', 'file_link']:
@@ -93,11 +88,15 @@ def job_update(request):
         if key in query_dict:
             update['job.report.'+key] = query_dict[key]
 
-    if not update:
-        return jsonResponse({"success": False})
+    if 'id' not in query_dict or not update:
+        return basic_failure
     else:
-        if db.jobs.count(search) > 0:
-            db.jobs.update_one(search, {"$set": update})
+        oid = query_dict['id']
+        if oid.endswith('_segment'):
+            oid = oid.replace('_segment', '')
+            collection = db.segment_jobs
         else:
-            db.segment_jobs.update_one(search, {"$set": update})
+            collection = db.jobs
+
+        collection.update_one({"_id": ObjectId(oid)}, {"$set": update})
         return jsonResponse({"success": True})

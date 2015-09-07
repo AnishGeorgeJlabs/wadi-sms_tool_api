@@ -165,7 +165,7 @@ def post_segment_form(request):
                     "status": "pending"
                 }
             })
-            oid_col = str(res.inserted_id) + (",%i,%i,%i" % (t_id, limits[i][0], limits[i][1]))
+            oid_col = str(res.inserted_id) + ("_segment,%i,%i,%i" % (t_id, limits[i][0], limits[i][1]))     # Added _segment
             result.append(oid_col)
 
             # Creating the row

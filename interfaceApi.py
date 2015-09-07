@@ -170,7 +170,7 @@ def post_segment_form(request):
 
             # Creating the row
             date = datetime.fromtimestamp(date / 1000)
-            start_date = datetime.strftime("%m/%d/%Y")
+            start_date = date.strftime("%m/%d/%Y")
             hour = date.hour
             minute = date.minute
 

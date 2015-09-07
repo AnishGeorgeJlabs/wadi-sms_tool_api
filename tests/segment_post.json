@@ -1,0 +1,28 @@
+{
+ "ref_job": "55e5587e21aaec7ec1b48247",
+ "total": 32512,
+ "t_id": 56,
+ "debug": true,
+ "segments": [
+  {
+   "english": "Brand new sms",
+   "arabic": "Some other time perhaps",
+   "date": 15516405109999
+  },
+  {
+   "english": "Some other sms",
+   "arabic": "An arabic message",
+   "date": 15516405109999
+  },
+  {
+   "english": "Some other sms",
+   "arabic": "An arabic message",
+   "date": 15516405109999
+  },
+  {
+   "english": "Some other sms",
+   "arabic": "An arabic message",
+   "date": 15516405109999
+  }
+ ]
+}

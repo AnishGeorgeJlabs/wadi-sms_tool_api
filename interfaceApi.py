@@ -149,7 +149,7 @@ def post_segment_form(request):
         for i, segment in enumerate(segments):
             date = segment['date']
             res = db.segment_jobs.insert_one({
-                "master": ObjectId(ref_job),
+                "ref_job": ObjectId(ref_job),
                 "timestamp": timestamp,
                 "segment_number": i+1,
                 "limits": {

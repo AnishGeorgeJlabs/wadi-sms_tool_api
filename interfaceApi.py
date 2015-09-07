@@ -1,4 +1,4 @@
-from data import jsonResponse, db, basic_error
+from data import jsonResponse, db, basic_error, basic_failure
 from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime
@@ -116,15 +116,47 @@ def post_segment_form(request):
         data = json.loads(request.body)
         total = data['total']
         segments = data['segments']
+        ref_job = data['ref_job']
+        t_id = data['t_id']
+        if db.jobs.count({"_id": ObjectId(ref_job)}) == 0:
+            return basic_failure
 
+        # Step 1: Setup limits
         slen = len(segments)
         sub_size = int(total) // slen
 
         limits = [
             [sub_size*i, sub_size*(i+1)] for i in range(0, slen)
         ]
-        limits[-1][1] = slen
-        return jsonResponse({"success": True, "limits": limits})
+        limits[-1][1] = total
+
+        # Step 2, create db jobs for each segment
+        result = [
+
+        ]
+        timestamp = datetime.now()
+        for i, segment in enumerate(segments):
+            res = db.segment_jobs.insert_one({
+                "master": ObjectId(ref_job),
+                "timestamp": timestamp,
+                "segment_number": i+1,
+                "limits": {
+                    "lower": limits[i][0],
+                    "upper": limits[i][1]
+                },
+                "text": {
+                    "english": segment['english'],
+                    "arabic": segment['arabic']
+                },
+                "date": segment['date'],
+                "job": {
+                    "status": "pending"
+                }
+            })
+            sheet_data = str(res.inserted_id) + (",%i,%i,%i" % (t_id, limits[i][0], limits[i][1]))
+            result.append(sheet_data)
+
+        return jsonResponse({"success": True, "result": result})
     except Exception, e:
         return basic_error(e)
 

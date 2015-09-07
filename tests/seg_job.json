@@ -1,0 +1,29 @@
+{
+  "segmented": true,
+  "debug": true,
+  "campaign_config": {
+
+  },
+  "target_config": {
+    "customer": {
+      "co_type": "required",
+      "value": [
+        "ksa"
+      ]
+    },
+    "category": {
+      "co_type": "required",
+      "value": [
+        "Electronics"
+      ]
+    },
+    "item_status": {
+      "co_type": "required",
+      "value": [
+        "allocated",
+        "automatic_return_requested",
+        "bi"
+      ]
+    }
+  }
+}

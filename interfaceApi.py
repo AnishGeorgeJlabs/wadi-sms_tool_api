@@ -31,7 +31,7 @@ def form_post(request):
         # Do processing here
         if data.get('segmented', False):
             row = ['No Send', 'external', '_', '', '1', '1', '_', '_']
-            data.pop('campaign_config')
+            data.pop('campaign_config', {})
         else:
             campaign = data['campaign_config']
             repeat = campaign.get('repeat', 'Once')

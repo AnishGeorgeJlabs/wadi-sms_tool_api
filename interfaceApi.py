@@ -29,39 +29,41 @@ def form_post(request):
     try:
         data = json.loads(request.body)
         # Do processing here
-
-        campaign = data['campaign_config']
-        repeat = campaign.get('repeat', 'Once')
-
-        start_date = datetime.fromtimestamp(campaign['start_date'] / 1000).strftime("%m/%d/%Y")
-        if 'end_date' in campaign:
-            end_date = datetime.fromtimestamp(campaign['end_date'] / 1000).strftime("%m/%d/%Y")
+        if data.get('segmented', False):
+            row = ['No Send', 'external', '_', '', '1', '1', '_', '_']
+            data.pop('campaign_config')
         else:
-            end_date = ''
+            campaign = data['campaign_config']
+            repeat = campaign.get('repeat', 'Once')
+            start_date = datetime.fromtimestamp(campaign['start_date'] / 1000).strftime("%m/%d/%Y")
+            if 'end_date' in campaign:
+                end_date = datetime.fromtimestamp(campaign['end_date'] / 1000).strftime("%m/%d/%Y")
+            else:
+                end_date = ''
 
-        time = datetime.fromtimestamp(campaign['time'] / 1000)
-        hour = time.hour
-        minute = time.minute
+            time = datetime.fromtimestamp(campaign['time'] / 1000)
+            hour = time.hour
+            minute = time.minute
 
-        english = campaign['text']['english']
-        arabic = campaign['text']['arabic']
+            english = campaign['text']['english']
+            arabic = campaign['text']['arabic']
 
-        if len(english.strip()) == 0:
-            english = '_'
-        if len(arabic.strip()) == 0:
-            arabic = '_'
+            if len(english.strip()) == 0:
+                english = '_'
+            if len(arabic.strip()) == 0:
+                arabic = '_'
 
-        data['timestamp'] = datetime.now()
+            row = [repeat, 'external', start_date, end_date, hour, minute, english, arabic]
+
+
         data['name'] = data.get('name', 'Untitled')             # Add name and description
         data['description'] = data.get('description', '')
         data['job'] = {'status': 'Pending'}                     # Add the job subdocument, will be used later
-
         debug = data.pop('debug', False)
 
+        data['timestamp'] = datetime.now()
         result = db.jobs.insert_one(data)           # >> Insertion here
-
-        # url = 'http://45.55.72.208/wadi/query?id=' + str(result.inserted_id)
-        row = [repeat, 'external', start_date, end_date, hour, minute, english, arabic, str(result.inserted_id)]
+        row.append(result.inserted_id)
 
         if debug:
             # db.jobs.remove({"_id": result.inserted_id})
@@ -92,7 +94,7 @@ def get_jobs(request):
         {"$match": {"job": {"$exists": True}}},
         {"$sort": {"timestamp": -1}},
         {"$project": {
-            "name": 1, "description": 1, "timestamp": 1,
+            "name": 1, "description": 1, "timestamp": 1, "segmented": 1,
             "start_date": "$campaign_config.start_date",
             "end_date": "$campaign_config.end_date",
             "time": "$campaign_config.time",

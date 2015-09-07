@@ -110,6 +110,24 @@ def _append_to_sheet(row):
     size = len(wrk_sheet.get_all_values())
     wrk_sheet.insert_row(row, size + 1)
 
+def post_segment_form(request):
+    try:
+        data = json.loads(request.body)
+        total = data['total']
+        segments = data['segments']
+
+        slen = len(segments)
+        sub_size = int(total) // slen
+
+        limits = [
+            [sub_size*i, sub_size*(i+1)] for i in range(0, slen)
+        ]
+        return jsonResponse({"success": True, "limits": limits})
+    except Exception, e:
+        return basic_error(e)
+
+
+
 @csrf_exempt
 def schedule_testing_send(request):
     try:

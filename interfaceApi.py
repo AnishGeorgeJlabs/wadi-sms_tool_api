@@ -63,7 +63,7 @@ def form_post(request):
 
         data['timestamp'] = datetime.now()
         result = db.jobs.insert_one(data)           # >> Insertion here
-        row.append(result.inserted_id)
+        row.append(str(result.inserted_id))
 
         if debug:
             # db.jobs.remove({"_id": result.inserted_id})

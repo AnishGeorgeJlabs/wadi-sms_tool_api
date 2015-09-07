@@ -1,4 +1,4 @@
-from data import jsonResponse, db, basic_error, basic_failure
+from data import jsonResponse, db, basic_error, basic_failure, basic_success
 from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime
@@ -177,7 +177,12 @@ def post_segment_form(request):
             row = ['Once', 'segment', start_date, '', hour, minute, segment['english'], segment['arabic'], oid_col]
             sheet_rows.append(row)
 
-        return jsonResponse({"success": True, "result": sheet_rows})
+        if data.get('debug', False):
+            return jsonResponse({"success": True, "result": sheet_rows})
+        else:
+            for row in sheet_rows:
+                _append_to_sheet(row)
+            return basic_success
     except Exception, e:
         return basic_error(e)
 
@@ -237,7 +242,7 @@ def cancel_job(request):
                     worksheet.update_acell("J"+str(row), "Cancel")
                     break
         db.jobs.update_one({"_id": job['_id']}, {"$set": {"job.status": "Cancel"}})
-        return jsonResponse({"success": True})
+        return basic_success
 
     except Exception, e:
         return basic_error(e)

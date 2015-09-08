@@ -133,20 +133,16 @@ def get_segment_jobs(request):
         }},
         {"$sort": {"timestamp": -1}}
     ])
-    debug_message = ""
     final = []
     for job in lst:
         if str(job["ref_job"]) in master_cache:
-            debug_message += "master cache, "
             job.update(master_cache[str(job["ref_job"])])
         else:
             master = db.jobs.find_one({"_id": job["ref_job"]},
                                       {"_id": False, "job": True})
             if not master:
                 lst.pop(job)
-                debug_message += "Removing job: "+json.dumps(job)
             else:
-                debug_message += "Got master for job"
                 umaster = {'name': master.get('name', 'Untitled'), 'description': master.get('description', '')}
                 if 't_id' in master.get('job', {}):
                     umaster['t_id'] = master['job']['t_id']
@@ -157,7 +153,7 @@ def get_segment_jobs(request):
                 job.update(umaster)
                 final.append(job)
 
-    return jsonResponse({"success": True, "debug": final})
+    return jsonResponse({"success": True, "data": final})
 
 def _append_to_sheet(row):
     wrk_sheet = get_scheduler_sheet()

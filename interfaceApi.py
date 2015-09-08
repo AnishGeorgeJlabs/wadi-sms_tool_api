@@ -139,7 +139,7 @@ def get_segment_jobs(request):
             job.update(master_cache[str(job["ref_job"])])
         else:
             master = db.jobs.find_one({"_id": job["ref_job"]},
-                                      {"_id": False, "job": True})
+                                      {"_id": False, "job": True, "name": True, "description": True})
             if not master:
                 continue
             else:

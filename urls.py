@@ -21,6 +21,7 @@ urlpatterns = patterns(
     url(r'^interface/job/new$', interfaceApi.form_post, name='interface.post'),
     url(r'^interface/job/cancel$', interfaceApi.cancel_job, name='interface.cancel'),
     url(r'^interface/job/segment/new$', interfaceApi.post_segment_form, name='interface.segment'),
+    url(r'^interface/job/segments$', interfaceApi.get_segment_jobs, name='interface.segment_all'),
     url(r'^interface/job/testing_message$', interfaceApi.schedule_testing_send, name='interface.post_test'),
 
     url(r'^interface/form$', interfaceApi.get_form_data, name='interface.form'),

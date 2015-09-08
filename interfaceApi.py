@@ -108,6 +108,8 @@ def get_jobs(request):
     return jsonResponse({"success": True, "data": list(jobs)})
 
 def get_segment_jobs(request):
+    master_cache = {}           # A cache of master jobs data
+
     lst = db.segment_jobs.aggregate([
         {"$group": {
             "_id": {
@@ -132,18 +134,25 @@ def get_segment_jobs(request):
         {"$sort": {"timestamp": -1}}
     ])
     for job in lst:
-        master = db.jobs.find_one({"_id": job["_id"]},
-                                  {"_id": False, "job": True})
-        if not master:
-            lst.pop(job)
-            continue
+        if job["_id"] in master_cache:
+            job.update(master_cache[job["_id"]])
         else:
-            job['name'] = master.get('name', 'Untitled')
-            job['description'] = master.get('description', '')
-            if 't_id' in master.get('job', {}):
-                job['t_id'] = master['job']['t_id']
-            if 'customer_count' in master.get('job', {}).get('report', {}):
-                job['count'] = master['job']['report']['customer_count']
+            master = db.jobs.find_one({"_id": job["_id"]},
+                                      {"_id": False, "job": True})
+            if not master:
+                lst.pop(job)
+                continue
+            else:
+                umaster = {}
+                umaster['name'] = master.get('name', 'Untitled')
+                umaster['description'] = master.get('description', '')
+                if 't_id' in master.get('job', {}):
+                    umaster['t_id'] = master['job']['t_id']
+                if 'customer_count' in master.get('job', {}).get('report', {}):
+                    umaster['count'] = master['job']['report']['customer_count']
+
+                master_cache[job["_id"]] = umaster
+                job.update(umaster)
 
     return jsonResponse({"success": True, "data": lst})
 

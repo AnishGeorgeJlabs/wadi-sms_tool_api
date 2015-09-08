@@ -141,7 +141,7 @@ def get_segment_jobs(request):
             master = db.jobs.find_one({"_id": job["ref_job"]},
                                       {"_id": False, "job": True})
             if not master:
-                lst.pop(job)
+                continue
             else:
                 umaster = {'name': master.get('name', 'Untitled'), 'description': master.get('description', '')}
                 if 't_id' in master.get('job', {}):
@@ -151,7 +151,7 @@ def get_segment_jobs(request):
 
                 master_cache[str(job["ref_job"])] = umaster
                 job.update(umaster)
-                final.append(job)
+        final.append(job)
 
     return jsonResponse({"success": True, "data": final})
 

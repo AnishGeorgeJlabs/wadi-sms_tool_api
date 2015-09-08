@@ -157,7 +157,7 @@ def get_segment_jobs(request):
                 job.update(umaster)
                 final.append(job)
 
-    return jsonResponse({"success": True, "result": final, "data": lst, "debug": debug_message, "original": orig_lst})
+    return jsonResponse({"success": True, "debug": final})
 
 def _append_to_sheet(row):
     wrk_sheet = get_scheduler_sheet()

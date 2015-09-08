@@ -134,8 +134,8 @@ def get_segment_jobs(request):
         {"$sort": {"timestamp": -1}}
     ])
     for job in lst:
-        if job["_id"] in master_cache:
-            job.update(master_cache[job["_id"]])
+        if str(job["_id"]) in master_cache:
+            job.update(master_cache[str(job["_id"])])
         else:
             master = db.jobs.find_one({"_id": job["_id"]},
                                       {"_id": False, "job": True})
@@ -149,7 +149,7 @@ def get_segment_jobs(request):
                 if 'customer_count' in master.get('job', {}).get('report', {}):
                     umaster['count'] = master['job']['report']['customer_count']
 
-                master_cache[job["_id"]] = umaster
+                master_cache[str(job["_id"])] = umaster
                 job.update(umaster)
 
     return jsonResponse({"success": True, "data": lst})

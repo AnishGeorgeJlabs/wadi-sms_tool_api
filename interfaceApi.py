@@ -143,9 +143,7 @@ def get_segment_jobs(request):
                 lst.pop(job)
                 continue
             else:
-                umaster = {}
-                umaster['name'] = master.get('name', 'Untitled')
-                umaster['description'] = master.get('description', '')
+                umaster = {'name': master.get('name', 'Untitled'), 'description': master.get('description', '')}
                 if 't_id' in master.get('job', {}):
                     umaster['t_id'] = master['job']['t_id']
                 if 'customer_count' in master.get('job', {}).get('report', {}):

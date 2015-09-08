@@ -135,6 +135,7 @@ def get_segment_jobs(request):
     ])
     orig_lst = list(lst)
     debug_message = ""
+    final = []
     for job in lst:
         if str(job["ref_job"]) in master_cache:
             job.update(master_cache[str(job["ref_job"])])
@@ -145,6 +146,7 @@ def get_segment_jobs(request):
                 lst.pop(job)
                 debug_message += "Removing job: "+json.dumps(job)
             else:
+                debug_message += "Got master for job"
                 umaster = {'name': master.get('name', 'Untitled'), 'description': master.get('description', '')}
                 if 't_id' in master.get('job', {}):
                     umaster['t_id'] = master['job']['t_id']
@@ -153,8 +155,9 @@ def get_segment_jobs(request):
 
                 master_cache[str(job["ref_job"])] = umaster
                 job.update(umaster)
+                final.append(job)
 
-    return jsonResponse({"success": True, "data": lst, "debug": debug_message, "original": orig_lst})
+    return jsonResponse({"success": True, "result": final, "data": lst, "debug": debug_message, "original": orig_lst})
 
 def _append_to_sheet(row):
     wrk_sheet = get_scheduler_sheet()

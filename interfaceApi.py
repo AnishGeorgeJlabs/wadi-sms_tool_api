@@ -133,6 +133,7 @@ def get_segment_jobs(request):
         }},
         {"$sort": {"timestamp": -1}}
     ])
+    orig_lst = lst.copy()
     debug_message = ""
     for job in lst:
         if str(job["ref_job"]) in master_cache:
@@ -153,7 +154,7 @@ def get_segment_jobs(request):
                 master_cache[str(job["ref_job"])] = umaster
                 job.update(umaster)
 
-    return jsonResponse({"success": True, "data": lst, "debug": debug_message})
+    return jsonResponse({"success": True, "data": lst, "debug": debug_message, "original": orig_lst})
 
 def _append_to_sheet(row):
     wrk_sheet = get_scheduler_sheet()

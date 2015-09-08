@@ -138,6 +138,7 @@ def get_segment_jobs(request):
     final = []
     for job in lst:
         if str(job["ref_job"]) in master_cache:
+            debug_message += "master cache, "
             job.update(master_cache[str(job["ref_job"])])
         else:
             master = db.jobs.find_one({"_id": job["ref_job"]},

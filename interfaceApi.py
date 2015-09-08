@@ -109,14 +109,42 @@ def get_jobs(request):
 
 def get_segment_jobs(request):
     lst = db.segment_jobs.aggregate([
-        {"$group": { "_id": "$master",
-                     "segments": {"$push": {
-                         "segment_number": "$segment_number",
-                         "text": "$text",
-                         "date": "$date",
-                         "status": "$job.status"
-                     }}}}
+        {"$group": {
+            "_id": {
+                "ref_job": "$ref_job",
+                "timestamp": "$timestamp"
+            },
+            "segments": {
+                "$push": {
+                    "status": "$job.status",
+                    "english": "$text.english",
+                    "arabic": "$text.arabic",
+                    "date": "$date",
+                    "num": "$segment_number"
+                }
+            }
+        }},
+        {"$project": {
+            "_id": 0, "segments": 1,
+            "ref_job": "$_id.ref_job",
+            "timestamp": "$_id.timestamp"
+        }},
+        {"$sort": {"timestamp": -1}}
     ])
+    for job in lst:
+        master = db.jobs.find_one({"_id": job["_id"]},
+                                  {"_id": False, "job": True})
+        if not master:
+            lst.pop(job)
+            continue
+        else:
+            job['name'] = master.get('name', 'Untitled')
+            job['description'] = master.get('description', '')
+            if 't_id' in master.get('job', {}):
+                job['t_id'] = master['job']['t_id']
+            if 'customer_count' in master.get('job', {}).get('report', {}):
+                job['count'] = master['job']['report']['customer_count']
+
     return jsonResponse({"success": True, "data": lst})
 
 def _append_to_sheet(row):

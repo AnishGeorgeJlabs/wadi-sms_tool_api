@@ -133,10 +133,9 @@ def get_segment_jobs(request):
         }},
         {"$sort": {"timestamp": -1}}
     ])
-    orig_lst = list(lst)
     debug_message = ""
     final = []
-    for job in orig_lst:
+    for job in lst:
         if str(job["ref_job"]) in master_cache:
             debug_message += "master cache, "
             job.update(master_cache[str(job["ref_job"])])

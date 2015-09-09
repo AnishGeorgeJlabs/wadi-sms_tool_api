@@ -80,7 +80,7 @@ def get_form_data(request):
     """
     Get the form
     """
-    data = db.form.find({}, {"_id": False, "regex": False})
+    data = db.form.find({"enabled": True}, {"_id": False, "regex": False, "enabled": False})
     return jsonResponse(data)
 
 def get_sample_form_data(request):

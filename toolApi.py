@@ -62,9 +62,10 @@ def get_pipeline(request):
                 'required': [],
                 'additional': []
             }
-            complete.pop('customer', '')
+            # complete.pop('customer', '')
             for k, v in complete.items():
-                pipeline[v['co_type']].append(k)
+                if k in options:
+                    pipeline[v['co_type']].append(k)
             pipeline['required'].append('customer')
 
         else:

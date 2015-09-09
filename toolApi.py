@@ -36,10 +36,16 @@ def get_pipeline(request):
             options['mode'] = 'all'
         else:
             cust = options.pop('customer')
-            if len(cust) == 2:
-                options['mode'] = 'all'
+            if isinstance(cust, list):
+                if len(cust) == 2:
+                    options['mode'] = 'all'
+                else:
+                    options['mode'] = cust[0].lower()
             else:
-                options['mode'] = cust[0]
+                if cust.lower() in ['both', 'all']:
+                    options['mode'] = 'all'
+                else:
+                    options['mode'] = cust
 
         if 'purchase_month' in options:
             options['purchase_month'] = [monthDict[a] for a in options['purchase_month']]

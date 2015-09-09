@@ -47,6 +47,9 @@ def get_pipeline(request):
                 else:
                     options['mode'] = cust
 
+        if 'language' in options and options['language'].lower() in ['both', 'all']:
+            options.pop('language')
+
         if 'purchase_month' in options:
             options['purchase_month'] = [monthDict[a] for a in options['purchase_month']]
 

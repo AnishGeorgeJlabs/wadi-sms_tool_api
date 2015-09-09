@@ -45,7 +45,7 @@ def get_pipeline(request):
                 if cust.lower() in ['both', 'all']:
                     options['mode'] = 'all'
                 else:
-                    options['mode'] = cust
+                    options['mode'] = cust.lower()
 
         if 'language' in options and options['language'].lower() in ['both', 'all']:
             options.pop('language')

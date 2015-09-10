@@ -13,6 +13,7 @@ def get_segment_jobs(request):
     master_cache = {}           # A cache of master jobs data
 
     lst = db.segment_jobs.aggregate([
+        {"$sort": {"segment_number": 1}},
         {"$group": {
             "_id": {
                 "ref_job": "$ref_job",
@@ -43,7 +44,10 @@ def get_segment_jobs(request):
             master = db.jobs.find_one({"_id": job["ref_job"]},
                                       {"_id": False, "job": True, "name": True, "description": True})
             if not master:
-                continue
+                master = db.external_data.find_one({"_id": job["ref_job"]},
+                                                   {"_id": False})
+            if not master:
+                return basic_failure
             else:
                 umaster = {'name': master.get('name', 'Untitled'), 'description': master.get('description', '')}
                 if 't_id' in master.get('job', {}):

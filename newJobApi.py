@@ -1,0 +1,107 @@
+from data import jsonResponse, db, basic_error, basic_failure, basic_success
+from django.views.decorators.csrf import csrf_exempt
+import json
+from datetime import datetime
+from external.sheet import get_scheduler_sheet, append_to_sheet
+from bson.json_util import ObjectId
+
+
+@csrf_exempt
+def form_post(request):
+    """ Form submission api """
+    try:
+        data = json.loads(request.body)
+        # Do processing here
+        if data.get('segmented', False):
+            row = ['No Send', 'external', '_', '', '1', '1', '_', '_']
+            data.pop('campaign_config', {})
+        else:
+            campaign = data['campaign_config']
+            repeat = campaign.get('repeat', 'Once')
+            start_date = datetime.fromtimestamp(campaign['start_date'] / 1000).strftime("%m/%d/%Y")
+            if 'end_date' in campaign:
+                end_date = datetime.fromtimestamp(campaign['end_date'] / 1000).strftime("%m/%d/%Y")
+            else:
+                end_date = ''
+
+            time = datetime.fromtimestamp(campaign['time'] / 1000)
+            hour = time.hour
+            minute = time.minute
+
+            english = campaign['text']['english']
+            arabic = campaign['text']['arabic']
+
+            if len(english.strip()) == 0:
+                english = '_'
+            if len(arabic.strip()) == 0:
+                arabic = '_'
+
+            row = [repeat, 'external', start_date, end_date, hour, minute, english, arabic]
+
+
+        data['name'] = data.get('name', 'Untitled')             # Add name and description
+        data['description'] = data.get('description', '')
+        data['job'] = {'status': 'Pending'}                     # Add the job subdocument, will be used later
+        debug = data.pop('debug', False)
+
+        data['timestamp'] = datetime.now()
+        result = db.jobs.insert_one(data)           # >> Insertion here
+        row.append(str(result.inserted_id))
+
+        if debug:
+            # db.jobs.remove({"_id": result.inserted_id})
+            return jsonResponse({'success': True, 'data_received': data, 'row created': row})
+        else:
+            append_to_sheet(row)
+            return jsonResponse({'success': True})
+
+    except Exception, e:
+        return basic_error(e)
+
+
+def get_form_data(request):
+    """
+    Get the form
+    """
+    data = db.form.find({"enabled": True}, {"_id": False, "regex": False, "enabled": False})
+    return jsonResponse(data)
+
+def get_sample_form_data(request):
+    """ Just for testing """
+    data = db.form.find({"operation": {"$in": ["item_status", "payment_method", "repeat_buyer"]}}, {"_id": False, "regex": False})
+    return jsonResponse(data)
+
+
+def get_jobs(request):
+    jobs = db.jobs.aggregate([
+        {"$match": {"job": {"$exists": True}}},
+        {"$sort": {"timestamp": -1}},
+        {"$project": {
+            "name": 1, "description": 1, "timestamp": 1, "segmented": 1,
+            "start_date": "$campaign_config.start_date",
+            "end_date": "$campaign_config.end_date",
+            "time": "$campaign_config.time",
+            "repeat": "$campaign_config.repeat",
+            "status": "$job.status",
+            "file": "$job.file_link",
+            "t_id": "$job.t_id",
+            "count": "$job.report.customer_count"
+        }}
+    ])
+    return jsonResponse({"success": True, "data": list(jobs)})
+
+
+
+@csrf_exempt
+def schedule_testing_send(request):
+    try:
+        data = json.loads(request.body)
+        english = data.get('english', '_')
+        arabic = data.get('arabic', '_')
+        row = ['Immediately', 'testing', '_', '', '_', '_', english, arabic]
+        append_to_sheet(row)
+        return jsonResponse({"success": True})
+
+    except Exception, e:
+        return basic_error(e)
+

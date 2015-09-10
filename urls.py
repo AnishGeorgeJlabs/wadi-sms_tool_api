@@ -1,7 +1,7 @@
 from django.conf.urls import url, patterns
 from . import api
 from httpproxy.views import HttpProxy
-from . import interfaceApi, blockApi, toolApi
+from . import newJobApi, blockApi, toolApi, credentialsApi, segmentationApi, dashboardApi
 
 urlpatterns = patterns(
     '',
@@ -16,16 +16,16 @@ urlpatterns = patterns(
     url(r'^block_list/count', blockApi.get_counts, name='block_count'),
     url(r'^block_list', blockApi.get_blocked, name='get_blocked'),
 
-    url(r'^interface/login$', interfaceApi.login, name='interface.login'),
+    url(r'^interface/login$', credentialsApi.login, name='interface.login'),
 
-    url(r'^interface/job/new$', interfaceApi.form_post, name='interface.post'),
-    url(r'^interface/job/cancel$', interfaceApi.cancel_job, name='interface.cancel'),
-    url(r'^interface/job/segment/new$', interfaceApi.post_segment_form, name='interface.segment'),
-    url(r'^interface/job/segments$', interfaceApi.get_segment_jobs, name='interface.segment_all'),
-    url(r'^interface/job/testing_message$', interfaceApi.schedule_testing_send, name='interface.post_test'),
+    url(r'^interface/job/new$', newJobApi.form_post, name='interface.post'),
+    url(r'^interface/job/cancel$', dashboardApi.cancel_job, name='interface.cancel'),
+    url(r'^interface/job/segment/new$', segmentationApi.post_segment_form, name='interface.segment'),
+    url(r'^interface/job/segments$', segmentationApi.get_segment_jobs, name='interface.segment_all'),
+    url(r'^interface/job/testing_message$', newJobApi.schedule_testing_send, name='interface.post_test'),
 
-    url(r'^interface/form$', interfaceApi.get_form_data, name='interface.form'),
-    url(r'^interface/jobs$', interfaceApi.get_jobs, name='interface.jobs'),
-    url(r'^interface/dummy/form$', interfaceApi.get_sample_form_data, name='interface.sample_form'),
+    url(r'^interface/form$', newJobApi.get_form_data, name='interface.form'),
+    url(r'^interface/jobs$', newJobApi.get_jobs, name='interface.jobs'),
+    url(r'^interface/dummy/form$', newJobApi.get_sample_form_data, name='interface.sample_form'),
     url(r'^configuration/(?P<namespace>\w+)/(?P<key>.*)$', api.get_conf, name='configurations'),
 )

@@ -91,3 +91,8 @@ def getFileLink(id):
         if int(id) == int(x['ID']):
             return x['Data Link']
     return ''
+
+def append_to_sheet(row):
+    wrk_sheet = get_scheduler_sheet()
+    size = len(wrk_sheet.get_all_values())
+    wrk_sheet.insert_row(row, size + 1)

@@ -1,9 +1,13 @@
-from data import jsonResponse, db, basic_error, basic_failure, basic_success
-from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime
-from external.sheet import append_to_sheet
+
+from django.views.decorators.csrf import csrf_exempt
+
 from bson.json_util import ObjectId
+
+from data import jsonResponse, db, basic_error, basic_failure, basic_success
+from external.sheet import append_to_sheet
+
 
 def get_segment_jobs(request):
     master_cache = {}           # A cache of master jobs data

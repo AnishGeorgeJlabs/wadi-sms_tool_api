@@ -1,6 +1,7 @@
 from django.conf.urls import url, patterns
-from . import api
 from httpproxy.views import HttpProxy
+
+from . import api
 from . import newJobApi, blockApi, toolApi, credentialsApi, segmentationApi, dashboardApi
 
 urlpatterns = patterns(
@@ -25,7 +26,7 @@ urlpatterns = patterns(
     url(r'^interface/job/testing_message$', newJobApi.schedule_testing_send, name='interface.post_test'),
 
     url(r'^interface/form$', newJobApi.get_form_data, name='interface.form'),
-    url(r'^interface/jobs$', newJobApi.get_jobs, name='interface.jobs'),
+    url(r'^interface/jobs$', dashboardApi.get_jobs, name='interface.jobs'),
     url(r'^interface/dummy/form$', newJobApi.get_sample_form_data, name='interface.sample_form'),
     url(r'^configuration/(?P<namespace>\w+)/(?P<key>.*)$', api.get_conf, name='configurations'),
 )

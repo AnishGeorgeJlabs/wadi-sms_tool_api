@@ -1,13 +1,15 @@
-from data import db, jsonResponse, basic_failure, basic_success
-from django.http import Http404
 import calendar
-from datetime import datetime
-from django.views.decorators.csrf import csrf_exempt
 import json
+
+from django.http import Http404
+from django.views.decorators.csrf import csrf_exempt
 from bson.objectid import ObjectId
 
-monthDict = dict((v, k) for k,v in enumerate(calendar.month_name))
+from data import db, jsonResponse, basic_failure
+
+monthDict = dict((v, k) for k, v in enumerate(calendar.month_name))
 lasttouch_dict = (db.form.find_one({"operation": "channel"}, {"regex": True}))['regex']
+
 
 def get_pipeline(request):
     """
@@ -76,6 +78,7 @@ def get_pipeline(request):
     else:
         raise Http404
 
+
 @csrf_exempt
 def job_update(request):
     """
@@ -92,11 +95,11 @@ def job_update(request):
 
     for key in ['status', 't_id', 'file_link']:
         if key in query_dict:
-            update['job.'+key] = query_dict[key]
+            update['job.' + key] = query_dict[key]
 
     for key in ['customer_count', 'sms_sent', 'sms_failed', 'errors']:
         if key in query_dict:
-            update['job.report.'+key] = query_dict[key]
+            update['job.report.' + key] = query_dict[key]
 
     if 'id' not in query_dict or not update:
         return basic_failure

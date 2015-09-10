@@ -1,6 +1,9 @@
-from data import jsonResponse, db, basic_error
-from django.views.decorators.csrf import csrf_exempt
 import json
+
+from django.views.decorators.csrf import csrf_exempt
+
+from data import jsonResponse, db, basic_error
+
 
 @csrf_exempt
 def login(request):

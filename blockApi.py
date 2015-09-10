@@ -1,11 +1,12 @@
-from data import basic_success, jsonResponse, db, basic_failure, basic_error
-from django.http import Http404
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime
-from validate_email import validate_email
 import csv
+
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from validate_email import validate_email
+
+from data import jsonResponse, db
 
 
 def _block_email(email):
@@ -139,7 +140,7 @@ def get_blocked(request):
             "data": [
                 x['email'] for x in
                 db.blocked_email.find({}, {"_id": False, "timestamp": False})
-            ]
+                ]
         })
     elif type == 'phone':
         return jsonResponse({
@@ -150,7 +151,7 @@ def get_blocked(request):
                     {"$project": {"_id": False, "phone": True, "language": True}},
                     {"$unwind": "$language"}
                 ])
-            ]
+                ]
         })
     else:
         return jsonResponse({
@@ -202,6 +203,7 @@ def block_list_csv(request):
     else:
         return jsonResponse({"success": False, "error": "No file"})
 
+
 def get_counts(request):
     """
     Get total counts for the number of emails and phones blocked
@@ -211,7 +213,7 @@ def get_counts(request):
         pcount = db.blocked_phone.count()
         return jsonResponse({"success": True, "email": ecount, "phone": pcount})
     except Exception, e:
-        return jsonResponse({"success": False, "error": "Exception: "+str(e)})
+        return jsonResponse({"success": False, "error": "Exception: " + str(e)})
 
 
 @csrf_exempt

@@ -1,9 +1,11 @@
-from data import jsonResponse, db, basic_error, basic_failure, basic_success
-from django.views.decorators.csrf import csrf_exempt
 import json
-from datetime import datetime
-from external.sheet import get_scheduler_sheet, append_to_sheet
+
+from django.views.decorators.csrf import csrf_exempt
 from bson.json_util import ObjectId
+
+from data import jsonResponse, db, basic_error, basic_success
+from external.sheet import get_scheduler_sheet
+
 
 @csrf_exempt
 def cancel_job(request):
@@ -29,8 +31,8 @@ def cancel_job(request):
 
         if not job:
             return jsonResponse({"success": False, "error": "Cannot find job"})
-        elif 'sheet_row' in job['job']: # We know the exact row number
-            worksheet.update_acell("J"+str(job['job']['sheet_row']), "Cancel")
+        elif 'sheet_row' in job['job']:  # We know the exact row number
+            worksheet.update_acell("J" + str(job['job']['sheet_row']), "Cancel")
         else:
             full = worksheet.get_all_records()
             if t_id == 0:
@@ -43,10 +45,29 @@ def cancel_job(request):
             for record in full:
                 if t_id == str(record['ID']):
                     row = full.index(record) + 2
-                    worksheet.update_acell("J"+str(row), "Cancel")
+                    worksheet.update_acell("J" + str(row), "Cancel")
                     break
         db.jobs.update_one({"_id": job['_id']}, {"$set": {"job.status": "Cancel"}})
         return basic_success
 
     except Exception, e:
         return basic_error(e)
+
+
+def get_jobs(request):
+    jobs = db.jobs.aggregate([
+        {"$match": {"job": {"$exists": True}}},
+        {"$sort": {"timestamp": -1}},
+        {"$project": {
+            "name": 1, "description": 1, "timestamp": 1, "segmented": 1,
+            "start_date": "$campaign_config.start_date",
+            "end_date": "$campaign_config.end_date",
+            "time": "$campaign_config.time",
+            "repeat": "$campaign_config.repeat",
+            "status": "$job.status",
+            "file": "$job.file_link",
+            "t_id": "$job.t_id",
+            "count": "$job.report.customer_count"
+        }}
+    ])
+    return jsonResponse({"success": True, "data": list(jobs)})

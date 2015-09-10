@@ -2,7 +2,7 @@ from django.conf.urls import url, patterns
 from httpproxy.views import HttpProxy
 
 from . import api
-from . import newJobApi, blockApi, toolApi, credentialsApi, segmentationApi, dashboardApi
+from . import newJobApi, blockApi, toolApi, credentialsApi, segmentationApi, dashboardApi, externalDbApi
 
 urlpatterns = patterns(
     '',
@@ -28,5 +28,7 @@ urlpatterns = patterns(
     url(r'^interface/form$', newJobApi.get_form_data, name='interface.form'),
     url(r'^interface/jobs$', dashboardApi.get_jobs, name='interface.jobs'),
     url(r'^interface/dummy/form$', newJobApi.get_sample_form_data, name='interface.sample_form'),
+
+    url(r'^/interface/external_data$', externalDbApi.external_data, name='interface.external_data'),
     url(r'^configuration/(?P<namespace>\w+)/(?P<key>.*)$', api.get_conf, name='configurations'),
 )

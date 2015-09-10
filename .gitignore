@@ -10,8 +10,8 @@ __pycache__/
 # Distribution / packaging
 .Python
 old
-# external/creds.dat
-# external/client_secret.json
+external/creds.dat
+external/client_secret.json
 env/
 build/
 develop-eggs/

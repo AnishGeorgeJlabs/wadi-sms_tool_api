@@ -29,6 +29,6 @@ urlpatterns = patterns(
     url(r'^interface/jobs$', dashboardApi.get_jobs, name='interface.jobs'),
     url(r'^interface/dummy/form$', newJobApi.get_sample_form_data, name='interface.sample_form'),
 
-    url(r'^/interface/external_data$', externalDbApi.external_data, name='interface.external_data'),
+    url(r'^interface/external_data$', externalDbApi.external_data, name='interface.external_data'),
     url(r'^configuration/(?P<namespace>\w+)/(?P<key>.*)$', api.get_conf, name='configurations'),
 )

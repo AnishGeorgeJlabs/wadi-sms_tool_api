@@ -1,0 +1,16 @@
+{
+  "segment_number": 2,
+  "ref_job": "ObjectId for initial job",
+  "jobs": [
+    {
+      "english": "English text",
+      "arabic": "Arabic text",
+      "date": "Date of execution",
+      "status": "current status, starts with Pending"
+    }
+  ],
+  "limits": {
+    "lower": 0,
+    "upper": 100
+  }
+}

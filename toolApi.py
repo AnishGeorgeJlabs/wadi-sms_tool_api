@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from bson.objectid import ObjectId
 
 from data import db, jsonResponse, basic_failure
+import segmentationApi
 
 monthDict = dict((v, k) for k, v in enumerate(calendar.month_name))
 lasttouch_dict = (db.form.find_one({"operation": "channel"}, {"regex": True}))['regex']
@@ -91,25 +92,26 @@ def job_update(request):
     else:
         query_dict = json.loads(request.body)
 
-    update = {}
-
-    for key in ['status', 't_id', 'file_link']:
-        if key in query_dict:
-            update['job.' + key] = query_dict[key]
-
-    for key in ['customer_count', 'sms_sent', 'sms_failed', 'errors']:
-        if key in query_dict:
-            update['job.report.' + key] = query_dict[key]
-
-    if 'id' not in query_dict or not update:
+    if 'id' not in query_dict:
         return basic_failure
-    else:
-        oid = query_dict['id']
-        if oid.endswith('_segment'):
-            oid = oid.replace('_segment', '')
-            collection = db.segment_jobs
-        else:
-            collection = db.jobs
 
+    oid = query_dict['id']
+    if '_' in oid:
+        return segmentationApi.job_update(query_dict)
+    else:
+        collection = db.jobs
+
+        update = {}
+
+        for key in ['status', 't_id', 'file_link']:
+            if key in query_dict:
+                update['job.' + key] = query_dict[key]
+
+        for key in ['customer_count', 'sms_sent', 'sms_failed', 'errors']:
+            if key in query_dict:
+                update['job.report.' + key] = query_dict[key]
+
+        if not update:
+            return basic_failure
         collection.update_one({"_id": ObjectId(oid)}, {"$set": update})
         return jsonResponse({"success": True})

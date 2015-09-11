@@ -1,0 +1,11 @@
+{
+  "segment_number": 1,
+  "jobs": [
+    {
+      "english": "English text",
+      "arabic": "Arabic text",
+      "date": "Date of execution",
+      "status": "current status, starts with Pending"
+    }
+  ]
+}

@@ -10,7 +10,11 @@ from external.sheet import append_to_sheet
 
 
 def get_segment_jobs(request):
-    master_cache = {}           # A cache of master jobs data
+    """ TODO: will change
+    :param request:
+    :return:
+    """
+    master_cache = {}  # A cache of master jobs data
 
     lst = db.segment_jobs.aggregate([
         {"$sort": {"segment_number": 1}},
@@ -78,7 +82,7 @@ def post_segment_form(request):
         sub_size = int(total) // slen
 
         limits = [
-            [sub_size*i, sub_size*(i+1)] for i in range(0, slen)
+            [sub_size * i, sub_size * (i + 1)] for i in range(0, slen)
             ]
         limits[-1][1] = total
 
@@ -91,7 +95,7 @@ def post_segment_form(request):
             res = db.segment_jobs.insert_one({
                 "ref_job": ObjectId(ref_job),
                 "timestamp": timestamp,
-                "segment_number": i+1,
+                "segment_number": i + 1,
                 "limits": {
                     "lower": limits[i][0],
                     "upper": limits[i][1]
@@ -105,7 +109,8 @@ def post_segment_form(request):
                     "status": "pending"
                 }
             })
-            oid_col = str(res.inserted_id) + ("_segment,%i,%i,%i" % (t_id, limits[i][0], limits[i][1]))     # Added _segment
+            oid_col = str(res.inserted_id) + (
+                "_segment,%i,%i,%i" % (t_id, limits[i][0], limits[i][1]))  # Added _segment
             result.append(oid_col)
 
             # Creating the row
@@ -126,3 +131,38 @@ def post_segment_form(request):
     except Exception, e:
         return basic_error(e)
 
+
+def job_update(options):
+    """
+    Warning, we will break all previous apis with this
+    id will be in the format oid_<jobNum>_[e]segment
+    where oid will point to the exact segment
+    <jobNum> will be an integer giving then job number inside the segment
+    the last part maybe esegment or segment denoting internal external or internal segment respectively
+    :param options:
+    :return:
+    """
+    try:
+        embed_opts = options['id'].split('_')
+        if len(embed_opts) < 3:
+            return jsonResponse({"success": False, "reason": "malformed oid sequence"})
+        else:
+            if embed_opts[2] == 'segment':
+                collection = db.segment_jobs
+            else:
+                collection = db.segment_external
+            job = "jobs." + embed_opts[1] + '.'
+            update = {}
+            for key in ['status', 't_id']:
+                if key in options:
+                    update[job + key] = options[key]
+
+            if not update:
+                return jsonResponse({"success": False, "reason": "No options"})
+
+            collection.update_one(
+                {"_id": ObjectId(embed_opts[0])},
+                {"$set": update}
+            )
+    except Exception, e:
+        return basic_error(e)

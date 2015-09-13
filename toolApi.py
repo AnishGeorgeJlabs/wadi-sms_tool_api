@@ -109,7 +109,7 @@ def job_update(request):
             if key in query_dict:
                 update['job.report.' + key] = query_dict[key]
 
-        if 'id' not in query_dict or not update or not p_update:
+        if 'id' not in query_dict or not (update or p_update):
             return jsonResponse({"success": False, "query": query_dict, "update": update, "p_update": p_update})
         else:
             oid = query_dict['id']

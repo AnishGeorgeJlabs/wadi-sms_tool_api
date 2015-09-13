@@ -4,6 +4,7 @@ import json
 from django.http import Http404
 from django.views.decorators.csrf import csrf_exempt
 from bson.objectid import ObjectId
+from datetime import datetime
 
 from data import db, jsonResponse, basic_failure
 
@@ -93,9 +94,14 @@ def job_update(request):
 
     update = {}
 
-    for key in ['status', 't_id', 'file_link']:
+    for key in ['t_id', 'file_link']:
         if key in query_dict:
             update['job.' + key] = query_dict[key]
+    if 'status' in query_dict:
+        update['$push'] = {'job.status': {
+            'status': query_dict['status'],
+            'time': datetime.now()
+        }}
 
     for key in ['customer_count', 'sms_sent', 'sms_failed', 'errors']:
         if key in query_dict:

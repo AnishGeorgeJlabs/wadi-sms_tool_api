@@ -93,21 +93,22 @@ def job_update(request):
         query_dict = json.loads(request.body)
 
     update = {}
+    p_update = {}
 
     for key in ['t_id', 'file_link']:
         if key in query_dict:
             update['job.' + key] = query_dict[key]
     if 'status' in query_dict:
-        update['$push'] = {'job.status': {
+        p_update['job.status'] = {
             'status': query_dict['status'],
             'time': datetime.now()
-        }}
+        }
 
     for key in ['customer_count', 'sms_sent', 'sms_failed', 'errors']:
         if key in query_dict:
             update['job.report.' + key] = query_dict[key]
 
-    if 'id' not in query_dict or not update:
+    if 'id' not in query_dict or not update or not p_update:
         return basic_failure
     else:
         oid = query_dict['id']
@@ -117,5 +118,11 @@ def job_update(request):
         else:
             collection = db.jobs
 
-        collection.update_one({"_id": ObjectId(oid)}, {"$set": update})
+        final_update = {}
+        if update:
+            final_update["$set"] = update
+        if p_update:
+            final_update["$push"] = p_update
+
+        collection.update_one({"_id": ObjectId(oid)}, final_update)
         return jsonResponse({"success": True})

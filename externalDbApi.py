@@ -42,7 +42,7 @@ def external_data(request):
 
             if base_match:
                 pipeline.append({"$match": base_match})
-            pipeline.append({"$unwind": { "$language" }})
+            pipeline.append({"$unwind": "$language" })
 
             language = [ x.strip() for x in request.GET.get('language', 'English,Arabic').split(',')]
             if len(language) == 1 and language[0].lower() != 'both':

@@ -70,4 +70,10 @@ def get_jobs(request):
             "count": "$job.report.customer_count"
         }}
     ])
-    return jsonResponse({"success": True, "data": list(jobs)})
+
+    final = []
+    for job in jobs:
+        if isinstance(job['status'], list):
+            job['status'] = job['status'][-1]['status']
+        final.append(job)
+    return jsonResponse({"success": True, "data": final})

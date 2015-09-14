@@ -41,7 +41,7 @@ def form_post(request):
 
         data['name'] = data.get('name', 'Untitled')  # Add name and description
         data['description'] = data.get('description', '')
-        data['job'] = {'status': 'Pending'}  # Add the job subdocument, will be used later
+        data['job'] = {'status': [{'status': 'Pending', 'time': datetime.now()}]}  # Add the job subdocument, will be used later
         debug = data.pop('debug', False)
 
         data['timestamp'] = datetime.now()

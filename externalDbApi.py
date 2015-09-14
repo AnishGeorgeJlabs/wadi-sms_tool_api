@@ -49,7 +49,7 @@ def external_data(request):
                 pipeline.append({"$match": base_match})
             pipeline.append({"$unwind": "$language" })
 
-            language = [ x.strip() for x in request.GET.get('language', 'English,Arabic').split(',')]
+            language = [x.strip() for x in request.GET.get('language', 'English,Arabic').split(',')]
             if len(language) == 1 and language[0].lower() != 'both':
                 lflag = True
                 if 'eng' in language[0].lower():
@@ -77,4 +77,5 @@ def external_data(request):
         else:
             return basic_error("Unimplemented Method")
     except Exception, e:
+        raise
         return basic_error(e)

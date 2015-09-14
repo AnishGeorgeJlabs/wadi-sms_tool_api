@@ -153,16 +153,29 @@ def job_update(options):
                 collection = db.segment_external
             job = "jobs." + embed_opts[1] + '.'
             update = {}
-            for key in ['status', 't_id']:
+            p_update = {}
+            for key in ['t_id']:
                 if key in options:
                     update[job + key] = options[key]
 
-            if not update:
+            if 'status' in options:
+                p_update[job + 'status'] = {
+                    'status': options['status'],
+                    'time': datetime.now()
+                }
+
+            if not (update or p_update):
                 return jsonResponse({"success": False, "reason": "No options"})
+
+            final = {}
+            if update:
+                final['$set'] = update
+            if p_update:
+                final['$push'] = p_update
 
             collection.update_one(
                 {"_id": ObjectId(embed_opts[0])},
-                {"$set": update}
+                final
             )
     except Exception, e:
         return basic_error(e)

@@ -62,14 +62,14 @@ def external_data(request):
 
             base_result = db.external_data.aggregate(pipeline)
             if not lflag:
-                return jsonResponse({"success": True, "data": _correct_list(list(base_result))})
+                return jsonResponse({"success": True, "data": _correct_list(list(base_result)), "lflag": lflag})
             else:
                 collision_set = {}
                 for customer in base_result:
                     ph = customer['phone']
                     if ph not in collision_set or customer['language'] == 'Arabic':
                         collision_set[ph] = customer
-                return jsonResponse({"success": True, "data": _correct_list(collision_set.values())})
+                return jsonResponse({"success": True, "data": _correct_list(collision_set.values()), "lflag": lflag})
 
         elif request.method == "POST":
             return basic_error("Unimplemented Method")

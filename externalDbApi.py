@@ -95,7 +95,7 @@ def _external_data_post(options):
         try:
             orig_seg = seg_num = max(db.external_data.distinct("segment_number"))
         except:
-            orig_seg = seg_num = 1
+            orig_seg = seg_num = 0
         insertions = []
         # Step 1, create Jobs in segment_external
         for segment in segments:

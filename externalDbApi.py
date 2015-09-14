@@ -11,7 +11,7 @@ def _correct_list(lst):
 
 def count_external_data(request):
     try:
-        base_counts = db.aggregate([
+        base_counts = db.external_data.aggregate([
             {"$group": {"_id": "$segment_number", "count": {"$sum": 1}}}
         ])
         final = {}

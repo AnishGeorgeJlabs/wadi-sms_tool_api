@@ -4,8 +4,9 @@ import json
 from django.http import Http404
 from django.views.decorators.csrf import csrf_exempt
 from bson.objectid import ObjectId
+from datetime import datetime
 
-from data import db, jsonResponse, basic_failure
+from data import db, jsonResponse, basic_failure, basic_error
 
 monthDict = dict((v, k) for k, v in enumerate(calendar.month_name))
 lasttouch_dict = (db.form.find_one({"operation": "channel"}, {"regex": True}))['regex']
@@ -85,31 +86,46 @@ def job_update(request):
     API endpoint for sms tool to update job status and all of that
     Refer docs/status_update_format.json
     """
+    try:
 
-    if request.method == 'GET':
-        query_dict = request.GET
-    else:
-        query_dict = json.loads(request.body)
-
-    update = {}
-
-    for key in ['status', 't_id', 'file_link']:
-        if key in query_dict:
-            update['job.' + key] = query_dict[key]
-
-    for key in ['customer_count', 'sms_sent', 'sms_failed', 'errors']:
-        if key in query_dict:
-            update['job.report.' + key] = query_dict[key]
-
-    if 'id' not in query_dict or not update:
-        return basic_failure
-    else:
-        oid = query_dict['id']
-        if oid.endswith('_segment'):
-            oid = oid.replace('_segment', '')
-            collection = db.segment_jobs
+        if request.method == 'GET':
+            query_dict = request.GET
         else:
-            collection = db.jobs
+            query_dict = json.loads(request.body)
 
-        collection.update_one({"_id": ObjectId(oid)}, {"$set": update})
-        return jsonResponse({"success": True})
+        update = {}
+        p_update = {}
+
+        for key in ['t_id', 'file_link']:
+            if key in query_dict:
+                update['job.' + key] = query_dict[key]
+        if 'status' in query_dict:
+            p_update['job.status'] = {
+                'status': query_dict['status'],
+                'time': datetime.now()
+            }
+
+        for key in ['customer_count', 'sms_sent', 'sms_failed', 'errors']:
+            if key in query_dict:
+                update['job.report.' + key] = query_dict[key]
+
+        if 'id' not in query_dict or not (update or p_update):
+            return jsonResponse({"success": False, "query": query_dict, "update": update, "p_update": p_update})
+        else:
+            oid = query_dict['id']
+            if oid.endswith('_segment'):
+                oid = oid.replace('_segment', '')
+                collection = db.segment_jobs
+            else:
+                collection = db.jobs
+
+            final_update = {}
+            if update:
+                final_update["$set"] = update
+            if p_update:
+                final_update["$push"] = p_update
+
+            collection.update_one({"_id": ObjectId(oid)}, final_update)
+            return jsonResponse({"success": True})
+    except Exception, e:
+        return basic_error(e)

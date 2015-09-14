@@ -31,7 +31,12 @@
   "description": "Optional description given at tool, defaults to empty string",
 
   "job": {
-    "status": "Pending -> Registered -> Data Loaded -> Processing -> Done",
+    "status": [
+      {
+        "status": "Pending -> Registered -> Data Loaded -> Processing -> Done",
+        "time": "Date time"
+      }
+    ],
     "t_id": "Tool job id",
     "file_link": "The file link once created",
     "report": {

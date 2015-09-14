@@ -30,5 +30,7 @@ urlpatterns = patterns(
     url(r'^interface/dummy/form$', newJobApi.get_sample_form_data, name='interface.sample_form'),
 
     url(r'^external_data$', externalDbApi.external_data, name='external_data'),
+    url(r'^external_data/count$', externalDbApi.count_external_data, name='count_external_data'),
+
     url(r'^configuration/(?P<namespace>\w+)/(?P<key>.*)$', api.get_conf, name='configurations'),
 )

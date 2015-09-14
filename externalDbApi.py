@@ -9,6 +9,21 @@ def _correct_list(lst):
         lst
     )
 
+def count_external_data(request):
+    try:
+        base_counts = db.aggregate([
+            {"$group": {"_id": "$segment_number", "count": {"$sum": 1}}}
+        ])
+        final = {}
+        for doc in base_counts:
+            if doc['_id'] is None:
+                key = 'unsegmented'
+            else:
+                key = doc['_id']
+            final[key] = doc['count']
+        return jsonResponse({"success": True, "data": final})
+    except Exception, e:
+        return basic_error(e)
 @csrf_exempt
 def external_data(request):
     """

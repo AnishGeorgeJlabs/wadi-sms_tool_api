@@ -25,7 +25,7 @@ def external_data(request):
             ]
             base_match = {}
             # ---------- segment number -------------------
-            seg_str = request.GET.get('seg_num', '')
+            seg_str = request.GET.get('seg_num', request.GET.get('segment', ''))
             if seg_str:
                 try:
                     seg_nums = [int(s) for s in seg_str.split(',')]

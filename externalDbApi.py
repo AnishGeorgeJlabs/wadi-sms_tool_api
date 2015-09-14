@@ -5,7 +5,7 @@ import json
 
 def _correct_list(lst):
     return map(
-        lambda k: [k[0].strip().replace('+','').replace('-','')] + k[1:],
+        lambda k: [k['phone'].strip().replace('+','').replace('-',''), k['language'], k['country']],
         lst
     )
 

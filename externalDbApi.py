@@ -15,13 +15,16 @@ def count_external_data(request):
             {"$group": {"_id": "$segment_number", "count": {"$sum": 1}}}
         ])
         final = {}
+        unsegmented = 0
         for doc in base_counts:
             if doc['_id'] is None:
-                key = 'unsegmented'
+                unsegmented = doc['count']
             else:
-                key = doc['_id']
-            final[key] = doc['count']
-        return jsonResponse({"success": True, "data": final})
+                final[doc['_id']] = doc['count']
+        return jsonResponse({"success": True, "data": {
+            'segmented': final,
+            'unsegmented': unsegmented
+        }})
     except Exception, e:
         return basic_error(e)
 @csrf_exempt

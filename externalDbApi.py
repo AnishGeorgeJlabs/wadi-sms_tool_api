@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.views.decorators.csrf import csrf_exempt
+import json
 
 from data import basic_error, db, jsonResponse, basic_success
 
@@ -145,7 +146,7 @@ def external_data(request):
         if request.method == "GET":
             return _external_data_get(request.GET)
         elif request.method == "POST":
-            return basic_error("Unimplemented Method")
+            return _external_data_post(json.loads(request.body))
         else:
             return basic_error("Unimplemented Method")
     except Exception, e:

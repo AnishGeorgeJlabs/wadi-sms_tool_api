@@ -3,6 +3,11 @@ from data import basic_error, basic_success, db, jsonResponse
 import requests
 import json
 
+def _correct_list(lst):
+    return map(
+        lambda k: [k[0].strip().replace('+','').replace('-','')] + k[1:],
+        lst
+    )
 
 @csrf_exempt
 def external_data(request):
@@ -57,14 +62,14 @@ def external_data(request):
 
             base_result = db.external_data.aggregate(pipeline)
             if not lflag:
-                return jsonResponse({"success": True, "data": list(base_result)})
+                return jsonResponse({"success": True, "data": _correct_list(list(base_result))})
             else:
                 collision_set = {}
                 for customer in base_result:
                     ph = customer['phone']
                     if ph not in collision_set or customer['language'] == 'Arabic':
                         collision_set[ph] = customer
-                return jsonResponse({"success": True, "data": collision_set.values()})
+                return jsonResponse({"success": True, "data": _correct_list(collision_set.values())})
 
         elif request.method == "POST":
             return basic_error("Unimplemented Method")

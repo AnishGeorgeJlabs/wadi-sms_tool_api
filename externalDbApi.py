@@ -1,7 +1,9 @@
+from datetime import datetime
+
 from django.views.decorators.csrf import csrf_exempt
-from data import basic_error, basic_success, db, jsonResponse
-import requests
-import json
+
+from data import basic_error, db, jsonResponse, basic_success
+
 
 def _correct_list(lst):
     return map(
@@ -81,6 +83,54 @@ def _external_data_get(options):
                 collision_set[ph] = customer
         return jsonResponse({"success": True, "data": _correct_list(collision_set.values()), "lflag": lflag})
 
+
+def _external_data_post(options):
+    job_col = db.segment_external
+    segments = options.get('segments', [])
+    if len(segments) == 0:
+        return jsonResponse({"success": False, "reason": "No segments given"})
+
+    if options.get('is_new', False):
+        try:
+            orig_seg = seg_num = max(db.external_data.distinct("segment_number"))
+        except:
+            orig_seg = seg_num = 1
+        insertions = []
+        # Step 1, create Jobs in segment_external
+        for segment in segments:
+            seg_num += 1
+            insertions.append({
+                "segment_number": seg_num,
+                "jobs": [{
+                    "english": segment['english'],
+                    "arabic": segment['arabic'],
+                    "date": segment['date'],
+                    "language": segment['language'],
+                    "country": segment['country'],
+                    "status": [{
+                        "status": "Pending",
+                        "time": datetime.now()
+                    }]
+                }]
+            })
+        job_col.insert_many(insertions)
+
+        # Step 2, segment external database members
+        unsegmented_count = db.external_data.count({"segment_number": {"$exists": False}})
+        total_segs = len(segments)
+        user_per_seg = unsegmented_count // total_segs
+        for i in range(total_segs):
+            orig_seg += 1
+            for j in range(user_per_seg):
+                db.external_data.update_one({"segment_number": {"$exists": False}},
+                                            {"$set": {"segment_number": orig_seg}})
+
+        db.external_data.update_one({"segment_number": {"$exists": False}},
+                                    {"$set": {"segment_number": orig_seg}})
+        # Step 3, add inputs to the sheet
+        return basic_success
+    else:
+        return basic_error("Unimplemented setting")
 
 @csrf_exempt
 def external_data(request):

@@ -106,7 +106,7 @@ def post_segment_form(request):
                 },
                 "date": date,
                 "job": {
-                    "status": "pending"
+                    "status": [{"status": "pending", "time": datetime.now()}]
                 }
             })
             oid_col = str(res.inserted_id) + (

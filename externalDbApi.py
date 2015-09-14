@@ -51,14 +51,14 @@ def external_data(request):
 
             language = [x.strip() for x in request.GET.get('language', 'English,Arabic').split(',')]
             if len(language) == 1 and language[0].lower() != 'both':
-                lflag = True
+                lflag = False
                 if 'eng' in language[0].lower():
                     lan = 'English'
                 else:
                     lan = 'Arabic'
                 pipeline.append({"$match": {"language": lan}})
             else:
-                lflag = False
+                lflag = True
 
             base_result = db.external_data.aggregate(pipeline)
             if not lflag:

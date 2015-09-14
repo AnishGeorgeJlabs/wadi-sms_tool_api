@@ -86,6 +86,19 @@ def _external_data_get(options):
 
 
 def _external_data_post(options):
+    def _create_job(segment):
+        return {
+            "english": segment['english'],
+            "arabic": segment['arabic'],
+            "date": segment['date'],
+            "language": segment['language'],
+            "country": segment['country'],
+            "status": [{
+                "status": "Pending",
+                "time": datetime.now()
+            }]
+        }
+
     job_col = db.segment_external
     segments = options.get('segments', [])
     if len(segments) == 0:
@@ -102,17 +115,7 @@ def _external_data_post(options):
             seg_num += 1
             insertions.append({
                 "segment_number": seg_num,
-                "jobs": [{
-                    "english": segment['english'],
-                    "arabic": segment['arabic'],
-                    "date": segment['date'],
-                    "language": segment['language'],
-                    "country": segment['country'],
-                    "status": [{
-                        "status": "Pending",
-                        "time": datetime.now()
-                    }]
-                }]
+                "jobs": [_create_job(segment)]
             })
         job_col.insert_many(insertions)
 
@@ -128,10 +131,13 @@ def _external_data_post(options):
 
         db.external_data.update_one({"segment_number": {"$exists": False}},
                                     {"$set": {"segment_number": orig_seg}})
-        # Step 3, add inputs to the sheet
-        return basic_success
-    else:
+        # Step 3, create the rows for the sheet
+        # TODO
+    else: # TODO
         return basic_error("Unimplemented setting")
+
+    # Last step, add stuff to sheet todo
+    return basic_success
 
 @csrf_exempt
 def external_data(request):

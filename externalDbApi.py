@@ -1,19 +1,22 @@
 from datetime import datetime
+import json
 
 from django.views.decorators.csrf import csrf_exempt
-import json
+
 from external.sheet import append_to_sheet
+from data import basic_error, db, jsonResponse
 
-from data import basic_error, db, jsonResponse, basic_success
-
-
-def _correct_list(lst):
-    return map(
-        lambda k: [k['phone'].strip().replace('+','').replace('-',''), k['language'], k['country']],
-        lst
-    )
 
 def count_external_data(request):
+    """ Returns the base stats of the external database
+    :returns:
+        success: bool,
+        data:
+            segmented: {
+                <segment_number>: <total number of customers in the given segment>
+            },
+            unsegmented: <total number of customers unsegmented>
+    """
     try:
         base_counts = db.external_data.aggregate([
             {"$group": {"_id": "$segment_number", "count": {"$sum": 1}}}
@@ -31,6 +34,49 @@ def count_external_data(request):
         }})
     except Exception, e:
         return basic_error(e)
+
+
+@csrf_exempt
+def external_data(request):
+    """
+    GET: Returns the external customers list as a [list of [phone, language]]
+        parameters:
+            seg_num: int,       >> Segment number, if not present, returns the entire list
+            language: String,   >> English,Arabic comma separated, if not, then both with arabic being preferred
+            country: String,    >> KSA or UAE
+    POST: Schedule jobs for existing segments or create new segments from unsegmented data and schedule their job
+        parameters:
+            is_new: bool,       >> If true, then new segments will be formed else old segments will be used and it is
+                                   expected that the segment number will be provided in each object of segments array
+            debug: bool,        >> If true, then no entry in the sheet will be made
+            segments: [         >> Required, array of segment jobs
+                {
+                    segment_number: int,    >> needed if is_new is true
+                    english: str,           >> english text, optional (only if language is set to arabic)
+                    arabic: str,            >> arabic text, optional (only if language is set to english)
+                    time: long,             >> unix timestamp, for execution date
+                    country: str,           >> Any of English, Arabic or Both
+                    language: str,          >> Any of UAE, KSA or Both
+                }
+            ]
+    """
+    try:
+        if request.method == "GET":
+            return _external_data_get(request.GET)
+        elif request.method == "POST":
+            return _external_data_post(json.loads(request.body))
+        else:
+            return basic_error("Unimplemented Method")
+    except Exception, e:
+        raise
+        return basic_error(e)
+
+
+def _correct_list(lst):
+    return map(
+        lambda k: [k['phone'].strip().replace('+', '').replace('-', ''), k['language'], k['country']],
+        lst
+    )
 
 
 def _external_data_get(options):
@@ -61,7 +107,7 @@ def _external_data_get(options):
 
     if base_match:
         pipeline.append({"$match": base_match})
-    pipeline.append({"$unwind": "$language" })
+    pipeline.append({"$unwind": "$language"})
 
     language = [x.strip() for x in options.get('language', 'English,Arabic').split(',')]
     if len(language) == 1 and language[0].lower() != 'both':
@@ -89,8 +135,8 @@ def _external_data_get(options):
 def _external_data_post(options):
     def _create_job(segment):
         return {
-            "english": segment['english'],
-            "arabic": segment['arabic'],
+            "english": segment.get('english', ''),
+            "arabic": segment.get('arabic', ''),
             "date": segment['date'],
             "language": segment['language'],
             "country": segment['country'],
@@ -112,7 +158,8 @@ def _external_data_post(options):
             dt = datetime.fromtimestamp(segment['date'] / 1000)
             oid = str(seg_data['_id'])
             oid += "_%i_esegment" % job_num
-            opts = "seg_num=%i&language=%s&country=%s" % (seg_data['segment_number'], segment['language'], segment['country'])
+            opts = "seg_num=%i&language=%s&country=%s" % (
+                seg_data['segment_number'], segment['language'], segment['country'])
             return [
                 'Once', 'segment', dt.strftime("%m/%d/%Y"), '',
                 dt.hour, dt.minute, segment['english'], segment['arabic'],
@@ -151,13 +198,13 @@ def _external_data_post(options):
 
         db.external_data.update_one({"segment_number": {"$exists": False}},
                                     {"$set": {"segment_number": orig_seg}})
-        sheet_rows = [ _create_sheet_row(insertion) for insertion in insertions]
+        sheet_rows = [_create_sheet_row(insertion) for insertion in insertions]
     else:
         for segment in segments:
             job = _create_job(segment)
             job_col.update_one({"segment_number": segment['segment_number']}, {"$push": {"jobs": job}})
         all_jobs = job_col.find({"segment_number": {"$in": [s['segment_number'] for s in segments]}})
-        sheet_rows = [ _create_sheet_row(seg_data) for seg_data in all_jobs]
+        sheet_rows = [_create_sheet_row(seg_data) for seg_data in all_jobs]
 
     # Last step, add stuff to sheet
     if not options.get('debug', False):
@@ -165,23 +212,3 @@ def _external_data_post(options):
             append_to_sheet(row)
 
     return jsonResponse({"success": True, "rows": sheet_rows})
-
-@csrf_exempt
-def external_data(request):
-    """
-    GET: Returns the external customers list as a [list of [phone, language]]
-         parameters:
-            seg_num: int,   >> Segment number, if not present, returns the entire list
-            language: String, >> English,Arabic comma separated, if not, then both with arabic being preferred
-            country: String, >> KSA or UAE
-    """
-    try:
-        if request.method == "GET":
-            return _external_data_get(request.GET)
-        elif request.method == "POST":
-            return _external_data_post(json.loads(request.body))
-        else:
-            return basic_error("Unimplemented Method")
-    except Exception, e:
-        raise
-        return basic_error(e)

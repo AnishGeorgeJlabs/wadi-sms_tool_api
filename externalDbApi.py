@@ -111,7 +111,7 @@ def _external_data_post(options):
             dt = datetime.fromtimestamp(segment['date'] / 1000)
             oid = str(seg_data['_id'])
             oid += "_%i_esegment" % job_num
-            opts = "seg_num=%i&language=%s&country=%s" % (job_num, segment['language'], segment['country'])
+            opts = "seg_num=%i&language=%s&country=%s" % (seg_data['segment_number'], segment['language'], segment['country'])
             return [
                 'Once', 'segment', dt.strftime("%m/%d/%Y"), '',
                 dt.hour, dt.minute, segment['english'], segment['arabic'],

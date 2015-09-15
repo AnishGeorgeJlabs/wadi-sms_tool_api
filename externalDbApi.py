@@ -99,6 +99,25 @@ def _external_data_post(options):
             }]
         }
 
+    # IMPORTANT, the Language or Country cannot have commas in it
+    def _create_sheet_row (seg_data):
+        seg_num = seg_data.get('segment_number')
+        if not seg_num:
+            return None
+        else:
+            segment = seg_data['jobs'][-1]
+            job_num = len(seg_data['jobs']) - 1
+
+            dt = datetime.fromtimestamp(segment['date'] / 1000)
+            oid = str(seg_data['_id'])
+            oid += "_%i_esegment" % job_num
+            opts = "seg_num=%i&language=%s&country=%s" % (job_num, segment['language'], segment['country'])
+            return [
+                'Once', 'segment', dt.strftime("%m/%d/%Y"), '',
+                dt.hour, dt.minute, segment['english'], segment['arabic'],
+                oid + ',' + opts
+            ]
+
     job_col = db.segment_external
     segments = options.get('segments', [])
     if len(segments) == 0:
@@ -131,13 +150,16 @@ def _external_data_post(options):
 
         db.external_data.update_one({"segment_number": {"$exists": False}},
                                     {"$set": {"segment_number": orig_seg}})
-        # Step 3, create the rows for the sheet
-        # TODO
-    else: # TODO
-        return basic_error("Unimplemented setting")
+        sheet_rows = [ _create_sheet_row(insertion) for insertion in insertions]
+    else:
+        for segment in segments:
+            job = _create_job(segment)
+            job_col.update_one({"segment_number": segment['segment_number']}, {"$push": {"jobs", job}})
+        all_jobs = job_col.find({"segment_number": {"$in": [s['segment_number'] for s in segments]}})
+        sheet_rows = [ _create_sheet_row(seg_data) for seg_data in all_jobs]
 
     # Last step, add stuff to sheet todo
-    return basic_success
+    return jsonResponse({"success": True, "rows": sheet_rows})
 
 @csrf_exempt
 def external_data(request):

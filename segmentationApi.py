@@ -177,5 +177,6 @@ def job_update(options):
                 {"_id": ObjectId(embed_opts[0])},
                 final
             )
+            return basic_success
     except Exception, e:
         return basic_error(e)

@@ -154,7 +154,7 @@ def _external_data_post(options):
     else:
         for segment in segments:
             job = _create_job(segment)
-            job_col.update_one({"segment_number": segment['segment_number']}, {"$push": {"jobs", job}})
+            job_col.update_one({"segment_number": segment['segment_number']}, {"$push": {"jobs": job}})
         all_jobs = job_col.find({"segment_number": {"$in": [s['segment_number'] for s in segments]}})
         sheet_rows = [ _create_sheet_row(seg_data) for seg_data in all_jobs]
 

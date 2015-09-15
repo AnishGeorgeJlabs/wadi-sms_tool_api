@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.views.decorators.csrf import csrf_exempt
 import json
+from external.sheet import append_to_sheet
 
 from data import basic_error, db, jsonResponse, basic_success
 
@@ -100,7 +101,7 @@ def _external_data_post(options):
         }
 
     # IMPORTANT, the Language or Country cannot have commas in it
-    def _create_sheet_row (seg_data):
+    def _create_sheet_row(seg_data):
         seg_num = seg_data.get('segment_number')
         if not seg_num:
             return None
@@ -158,7 +159,11 @@ def _external_data_post(options):
         all_jobs = job_col.find({"segment_number": {"$in": [s['segment_number'] for s in segments]}})
         sheet_rows = [ _create_sheet_row(seg_data) for seg_data in all_jobs]
 
-    # Last step, add stuff to sheet todo
+    # Last step, add stuff to sheet
+    if not options.get('debug', False):
+        for row in sheet_rows:
+            append_to_sheet(row)
+
     return jsonResponse({"success": True, "rows": sheet_rows})
 
 @csrf_exempt

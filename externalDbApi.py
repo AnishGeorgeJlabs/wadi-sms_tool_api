@@ -178,4 +178,5 @@ def external_data(request):
         else:
             return basic_error("Unimplemented Method")
     except Exception, e:
+        raise
         return basic_error(e)

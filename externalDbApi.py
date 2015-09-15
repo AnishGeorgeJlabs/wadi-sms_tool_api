@@ -36,6 +36,15 @@ def count_external_data(request):
         return basic_error(e)
 
 
+def get_external_segments(request):
+    base_list = db.segment_external.find({}, {"_id": False, })
+    final = []
+    for doc in base_list:
+        for job in doc['jobs']:
+            job['status'] = job['status'][-1]['status']
+        final.append(doc)
+    return jsonResponse({"success": True, "data": final})
+
 @csrf_exempt
 def external_data(request):
     """

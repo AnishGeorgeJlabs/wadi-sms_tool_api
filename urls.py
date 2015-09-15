@@ -31,6 +31,7 @@ urlpatterns = patterns(
 
     url(r'^external_data$', externalDbApi.external_data, name='external_data'),
     url(r'^external_data/count$', externalDbApi.count_external_data, name='count_external_data'),
+    url(r'^interface/external_segments$', externalDbApi.get_external_segments, name='interface.external_segments'),
 
     url(r'^configuration/(?P<namespace>\w+)/(?P<key>.*)$', api.get_conf, name='configurations'),
 )

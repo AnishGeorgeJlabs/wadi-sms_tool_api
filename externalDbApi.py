@@ -181,7 +181,7 @@ def _external_data_seg_new_job(options):
     # IMPORTANT, the Language or Country cannot have commas in it
     def _create_sheet_row(seg_data):
         seg_num = seg_data.get('segment_number')
-        if not seg_num:
+        if not seg_num or len(seg_data.get('jobs', [])) == 0:
             return None
         else:
             segment = seg_data['jobs'][-1]
@@ -212,9 +212,13 @@ def _external_data_seg_new_job(options):
         # Step 1, create Jobs in segment_external
         for segment in segments:
             seg_num += 1
+            if segment.get('no_job', False):
+                jobs = []
+            else:
+                jobs = [_create_job(segment)]
             insertions.append({
                 "segment_number": seg_num,
-                "jobs": [_create_job(segment)]
+                "jobs": jobs
             })
         job_col.insert_many(insertions)
 
@@ -230,7 +234,11 @@ def _external_data_seg_new_job(options):
 
         db.external_data.update_one({"segment_number": {"$exists": False}},
                                     {"$set": {"segment_number": orig_seg}})
-        sheet_rows = [_create_sheet_row(insertion) for insertion in insertions]
+        sheet_rows = [
+            row for row in
+            [_create_sheet_row(insertion) for insertion in insertions]
+            if row is not None
+        ]
     else:
         for segment in segments:
             job = _create_job(segment)

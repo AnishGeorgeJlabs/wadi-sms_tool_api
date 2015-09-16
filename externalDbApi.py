@@ -4,7 +4,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 
 from external.sheet import append_to_sheet
-from data import basic_error, db, jsonResponse
+from data import basic_error, db, jsonResponse, unimplemented_error
 
 
 def count_external_data(request):
@@ -36,23 +36,23 @@ def count_external_data(request):
         return basic_error(e)
 
 
-def get_external_segments(request):
-    base_list = db.segment_external.find({}, {"_id": False, })
-    final = []
-    for doc in base_list:
-        for job in doc['jobs']:
-            job['status'] = job['status'][-1]['status']
-        final.append(doc)
-    return jsonResponse({"success": True, "data": final})
-
-@csrf_exempt
-def external_data(request):
+def external_data_segments(request):
     """
-    GET: Returns the external customers list as a [list of [phone, language]]
-        parameters:
-            seg_num: int,       >> Segment number, if not present, returns the entire list
-            language: String,   >> English,Arabic comma separated, if not, then both with arabic being preferred
-            country: String,    >> KSA or UAE
+    GET: Returns all the segments and their current Jobs
+        :returns: {
+            success: bool,
+            data: [{
+                segment_number: int,
+                jobs: [{
+                    status: str,
+                    language: str,          >> Both, English or Arabic
+                    country: str,           >> Both, UAE or KSA
+                    english: str,
+                    arabic: str,
+                    date: long
+                }]
+            }]
+        }
     POST: Schedule jobs for existing segments or create new segments from unsegmented data and schedule their job
         parameters:
             is_new: bool,       >> If true, then new segments will be formed else old segments will be used and it is
@@ -71,13 +71,36 @@ def external_data(request):
     """
     try:
         if request.method == "GET":
-            return _external_data_get(request.GET)
+            base_list = db.segment_external.find({}, {"_id": False, })
+            final = []
+            for doc in base_list:
+                for job in doc['jobs']:
+                    job['status'] = job['status'][-1]['status']
+                final.append(doc)
+            return jsonResponse({"success": True, "data": final})
         elif request.method == "POST":
-            return _external_data_post(json.loads(request.body))
+            return _external_data_seg_new_job(json.loads(request.body))
         else:
-            return basic_error("Unimplemented Method")
+            return unimplemented_error
     except Exception, e:
-        raise
+        return basic_error(e)
+
+
+@csrf_exempt
+def external_data(request):
+    """
+    GET: Returns the external customers list as a [list of [phone, language]]
+        parameters:
+            seg_num: int,       >> Segment number, if not present, returns the entire list
+            language: String,   >> English,Arabic comma separated, if not, then both with arabic being preferred
+            country: String,    >> KSA or UAE
+    """
+    try:
+        if request.method == "GET":
+            return _external_data_get(request.GET)
+        else:
+            return unimplemented_error
+    except Exception, e:
         return basic_error(e)
 
 
@@ -141,7 +164,7 @@ def _external_data_get(options):
         return jsonResponse({"success": True, "data": _correct_list(collision_set.values()), "lflag": lflag})
 
 
-def _external_data_post(options):
+def _external_data_seg_new_job(options):
     def _create_job(segment):
         return {
             "english": segment.get('english', ''),

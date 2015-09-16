@@ -176,7 +176,7 @@ def _external_data_get(options):
 
 def _external_data_seg_new_job(options):
     def _create_job(segment):
-        return {
+        res = {
             "english": segment.get('english', ''),
             "arabic": segment.get('arabic', ''),
             "date": segment['date'],
@@ -187,6 +187,9 @@ def _external_data_seg_new_job(options):
                 "time": datetime.now()
             }]
         }
+        if segment.get('name'):
+            res['name'] = segment['name']
+        return res
 
     # IMPORTANT, the Language or Country cannot have commas in it
     def _create_sheet_row(seg_data):

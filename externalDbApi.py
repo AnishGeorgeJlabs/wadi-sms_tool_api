@@ -41,6 +41,7 @@ def _get_external_counts():
     return final, unsegmented
 
 
+@csrf_exempt
 def external_data_segments(request):
     """
     GET: Returns all the segments and their current Jobs

@@ -18,22 +18,27 @@ def count_external_data(request):
             unsegmented: <total number of customers unsegmented>
     """
     try:
-        base_counts = db.external_data.aggregate([
-            {"$group": {"_id": "$segment_number", "count": {"$sum": 1}}}
-        ])
-        final = {}
-        unsegmented = 0
-        for doc in base_counts:
-            if doc['_id'] is None:
-                unsegmented = doc['count']
-            else:
-                final[doc['_id']] = doc['count']
+        segmented, unsegmented = _get_external_counts()
         return jsonResponse({"success": True, "data": {
-            'segmented': final,
+            'segmented': segmented,
             'unsegmented': unsegmented
         }})
     except Exception, e:
         return basic_error(e)
+
+
+def _get_external_counts():
+    base_counts = db.external_data.aggregate([
+        {"$group": {"_id": "$segment_number", "count": {"$sum": 1}}}
+    ])
+    final = {}
+    unsegmented = 0
+    for doc in base_counts:
+        if doc['_id'] is None:
+            unsegmented = doc['count']
+        else:
+            final[doc['_id']] = doc['count']
+    return final, unsegmented
 
 
 def external_data_segments(request):
@@ -71,13 +76,17 @@ def external_data_segments(request):
     """
     try:
         if request.method == "GET":
+
+            counts_seg, count_unseg = _get_external_counts()
+
             base_list = db.segment_external.find({}, {"_id": False, }).sort("segment_number")
             final = []
             for doc in base_list:
                 for job in doc['jobs']:
                     job['status'] = job['status'][-1]['status']
+                doc['total'] = counts_seg.get(doc.get('segment_number', 0), 0)
                 final.append(doc)
-            return jsonResponse({"success": True, "data": final})
+            return jsonResponse({"success": True, "data": final, "unsegmented": count_unseg})
         elif request.method == "POST":
             return _external_data_seg_new_job(json.loads(request.body))
         else:

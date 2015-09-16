@@ -71,7 +71,7 @@ def external_data_segments(request):
     """
     try:
         if request.method == "GET":
-            base_list = db.segment_external.find({}, {"_id": False, })
+            base_list = db.segment_external.find({}, {"_id": False, }).sort("segment_number")
             final = []
             for doc in base_list:
                 for job in doc['jobs']:

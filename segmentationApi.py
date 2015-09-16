@@ -135,7 +135,7 @@ def post_segment_form(request):
 def job_update(options):
     """
     Warning, we will break all previous apis with this
-    id will be in the format oid_<jobNum>_[e]segment
+    id will be in the format oid_[<jobNum>]_[e]segment
     where oid will point to the exact segment
     <jobNum> will be an integer giving then job number inside the segment
     the last part maybe esegment or segment denoting internal external or internal segment respectively
@@ -144,14 +144,16 @@ def job_update(options):
     """
     try:
         embed_opts = options['id'].split('_')
-        if len(embed_opts) < 3:
+        if len(embed_opts) < 2:
             return jsonResponse({"success": False, "reason": "malformed oid sequence"})
         else:
-            if embed_opts[2] == 'segment':
+            if embed_opts[-1] == 'segment':
                 collection = db.segment_jobs
+                job = "job."
             else:
                 collection = db.segment_external
-            job = "jobs." + embed_opts[1] + '.'
+                job = "jobs." + embed_opts[1] + '.'
+
             update = {}
             p_update = {}
             for key in ['t_id']:

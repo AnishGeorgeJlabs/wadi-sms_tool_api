@@ -66,7 +66,7 @@ def cancel_job(request):
                     break
 
         collection.update_one({"_id": main_job['_id']},
-                              {"$push": {update_key: {"status": "Cancel", "time": datetime.now()}}})
+                              {"$push": {update_key: {"status": "Cancelled", "time": datetime.now()}}})
         return basic_success
 
     except Exception, e:

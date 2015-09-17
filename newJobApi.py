@@ -1,5 +1,6 @@
 import json
-from datetime import datetime
+
+from datetime import datetime, date, timedelta
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -58,13 +59,29 @@ def form_post(request):
     except Exception, e:
         return basic_error(e)
 
+_operation_start = date(2015, 3, 1)
+def _create_month_year():
+    this_month = date.today().replace(day=1)
+    dt = _operation_start
+
+    lst = []
+    while dt <= this_month:
+        lst.append(dt.strftime("%B %Y"))
+        dt = (dt + timedelta(days=32)).replace(day=1)
+    return lst
 
 def get_form_data(request):
     """
     Get the form
     """
     data = db.form.find({"enabled": True}, {"_id": False, "regex": False, "enabled": False})
-    return jsonResponse(data)
+    final = []
+    for op in data:
+        if op.get('dynamic_month', True):
+            op.pop('dynamic_month')
+            op['values'] = _create_month_year()
+        final.append(op)
+    return jsonResponse(final)
 
 
 def get_sample_form_data(request):

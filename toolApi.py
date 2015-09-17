@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from bson.objectid import ObjectId
 from datetime import datetime
 
-from data import db, jsonResponse, basic_failure, basic_error
+from data import db, jsonResponse, basic_failure, basic_error, failed_reason
 import segmentationApi
 
 monthDict = dict((v, k) for k, v in enumerate(calendar.month_name))
@@ -111,40 +111,51 @@ def job_update(request):
         else:
             query_dict = json.loads(request.body)
 
+        # --------------- Select correct collection and key -----------
         oid = query_dict['id']
-        if '_' in oid:
-            return segmentationApi.job_update(query_dict)
+        if '_' in oid:  # Segmented jobs
+            embed_opts = oid.split('_')
+            if len(embed_opts) < 2:
+                return failed_reason("Malformed url")
+
+            oid = embed_opts[0]
+            if embed_opts[-1] == 'segment':
+                collection = db.segment_jobs
+                job_key = "job."
+            else:
+                collection = db.segment_external
+                job_key = "jobs." + embed_opts[1] + '.'
         else:
             collection = db.jobs
+            job_key = "job."
 
-            update = {}
-            p_update = {}
+        # --------------- SETUP various updates -----------------------
+        update = {}
+        p_update = {}
 
-            for key in ['t_id', 'file_link', 'sheet_row']:
-                if key in query_dict:
-                    update['job.' + key] = query_dict[key]
-            if 'status' in query_dict:
-                p_update['job.status'] = {
-                    'status': query_dict['status'],
-                    'time': datetime.now()
-                }
+        for key in ['t_id', 'file_link', 'sheet_row']:
+            if key in query_dict:
+                update[job_key + key] = query_dict[key]
+        if 'status' in query_dict:
+            p_update[job_key+'status'] = {
+                'status': query_dict['status'],
+                'time': datetime.now()
+            }
+        for key in ['customer_count', 'sms_sent', 'sms_failed', 'errors']:
+            if key in query_dict:
+                update[job_key+'report.' + key] = query_dict[key]
+        # -------------------------------------------------------------
 
-            for key in ['customer_count', 'sms_sent', 'sms_failed', 'errors']:
-                if key in query_dict:
-                    update['job.report.' + key] = query_dict[key]
+        if not (update or p_update):
+            return jsonResponse({"success": False, "reason": "No options", "query": query_dict, "update": update, "p_update": p_update})
+        else:
+            final_update = {}
+            if update:
+                final_update["$set"] = update
+            if p_update:
+                final_update["$push"] = p_update
 
-            if not (update or p_update):
-                return jsonResponse({"success": False, "query": query_dict, "update": update, "p_update": p_update})
-            else:
-                oid = query_dict['id']
-
-                final_update = {}
-                if update:
-                    final_update["$set"] = update
-                if p_update:
-                    final_update["$push"] = p_update
-
-                collection.update_one({"_id": ObjectId(oid)}, final_update)
-                return jsonResponse({"success": True})
+            collection.update_one({"_id": ObjectId(oid)}, final_update)
+            return jsonResponse({"success": True})
     except Exception, e:
         return basic_error(e)

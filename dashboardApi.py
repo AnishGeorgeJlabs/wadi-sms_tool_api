@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from django.views.decorators.csrf import csrf_exempt
 from bson.json_util import ObjectId
@@ -20,7 +21,7 @@ def cancel_job(request):
             external_segment = True
             collection = db.segment_external
             search = {"segment_number": data['segment_number'], "jobs.0": {"$exists": True}}
-            update_key = "jobs."+str(data.get('job_number', 0))+".status"
+            update_key = "jobs." + str(data.get('job_number', 0)) + ".status"
         else:
             external_segment = False
             oid = data.get('id', data.get('oid', data.get('_id')))
@@ -64,7 +65,8 @@ def cancel_job(request):
                     worksheet.update_acell("J" + str(row), "Cancel")
                     break
 
-        collection.update_one({"_id": main_job['_id']}, {"$push": {update_key: {"status": "Cancel"}}})
+        collection.update_one({"_id": main_job['_id']},
+                              {"$push": {update_key: {"status": "Cancel", "time": datetime.now()}}})
         return basic_success
 
     except Exception, e:

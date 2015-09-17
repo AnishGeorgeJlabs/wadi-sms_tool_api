@@ -132,6 +132,7 @@ def post_segment_form(request):
         return basic_error(e)
 
 
+### DEPRECATED --------------------------------------
 def job_update(options):
     """
     Warning, we will break all previous apis with this

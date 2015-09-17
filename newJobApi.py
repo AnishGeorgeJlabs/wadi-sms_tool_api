@@ -77,7 +77,7 @@ def get_form_data(request):
     data = db.form.find({"enabled": True}, {"_id": False, "regex": False, "enabled": False})
     final = []
     for op in data:
-        if op.get('dynamic_month', True):
+        if op.get('dynamic_month', False):
             op.pop('dynamic_month')
             op['values'] = _create_month_year()
         final.append(op)

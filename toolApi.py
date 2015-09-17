@@ -10,6 +10,14 @@ from data import db, jsonResponse, basic_failure, basic_error
 import segmentationApi
 
 monthDict = dict((v, k) for k, v in enumerate(calendar.month_name))
+
+advMonthDict = {}
+for k, v in monthDict.items():
+    if v < 10:
+        advMonthDict[k] = "0%i" % v
+    else:
+        advMonthDict[k] = str(v)
+
 lasttouch_dict = (db.form.find_one({"operation": "channel"}, {"regex": True}))['regex']
 
 
@@ -54,8 +62,16 @@ def get_pipeline(request):
         if 'language' in options and options['language'].lower() in ['both', 'all']:
             options.pop('language')
 
-        if 'purchase_month' in options:
-            options['purchase_month'] = [monthDict[a] for a in options['purchase_month']]
+        if 'purchase_month' in options and len(options['purchase_month']) > 0:
+            if ' ' in options['purchase_month'][0]:
+                # New API
+                lst = []
+                for ym in options['purchase_month']:
+                    opts = ym.split(' ')
+                    lst.append("%s%s" % (opts[1], advMonthDict[opts[0]]))       # String type wel have
+                options['purchase_month'] = lst
+            else:
+                options['purchase_month'] = [monthDict[a] for a in options['purchase_month']]
 
         if 'channel' in options:
             options['channel'] = map(lambda k: lasttouch_dict[k], options['channel'])

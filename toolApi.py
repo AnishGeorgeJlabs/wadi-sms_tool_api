@@ -63,15 +63,15 @@ def get_pipeline(request):
             options.pop('language')
 
         if 'purchase_month' in options and len(options['purchase_month']) > 0:
-            if ' ' in options['purchase_month'][0]:
-                # New API
-                lst = []
-                for ym in options['purchase_month']:
-                    opts = ym.split(' ')
-                    lst.append("%s%s" % (opts[1], advMonthDict[opts[0]]))       # String type wel have
-                options['purchase_month'] = lst
-            else:
-                options['purchase_month'] = [monthDict[a] for a in options['purchase_month']]
+            base_lst = options.pop('purchase_month')
+            if ' ' not in base_lst[0]:      # JUGAAAD
+                base_lst = [x + " 2015" for x in base_lst]
+
+            lst = []
+            for ym in base_lst:
+                opts = ym.split(' ')
+                lst.append("%s%s" % (opts[1], advMonthDict[opts[0]]))       # String type wel have
+            options['purchase_month'] = lst
 
         if 'channel' in options:
             options['channel'] = map(lambda k: lasttouch_dict[k], options['channel'])

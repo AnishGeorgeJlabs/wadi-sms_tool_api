@@ -120,7 +120,7 @@ def job_update(request):
             update = {}
             p_update = {}
 
-            for key in ['t_id', 'file_link']:
+            for key in ['t_id', 'file_link', 'sheet_row']:
                 if key in query_dict:
                     update['job.' + key] = query_dict[key]
             if 'status' in query_dict:

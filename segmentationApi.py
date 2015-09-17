@@ -156,7 +156,7 @@ def job_update(options):
 
             update = {}
             p_update = {}
-            for key in ['t_id']:
+            for key in ['t_id', 'sheet_row']:
                 if key in options:
                     update[job + key] = options[key]
 

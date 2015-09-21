@@ -20,3 +20,17 @@ def login(request):
             return jsonResponse({"success": False})
     except Exception, e:
         return basic_error(e)
+
+
+@csrf_exempt
+def change_pass(request):
+    """
+    Simple change password protocol
+    """
+    try:
+        data = json.loads(request.body)
+        res = db.credentials.update_one({"username": data['username'], "password": data['original_pass']},
+                                        {"$set": {"password": data['new_pass']}})
+        return jsonResponse({"success": bool(res.modified_count)})
+    except Exception, e:
+        return basic_error(e)

@@ -18,6 +18,7 @@ urlpatterns = patterns(
     url(r'^block_list', blockApi.get_blocked, name='get_blocked'),
 
     url(r'^interface/login$', credentialsApi.login, name='interface.login'),
+    url(r'^interface/change_pass$', credentialsApi.change_pass, name='interface.change_pass'),
 
     url(r'^interface/job/new$', newJobApi.form_post, name='interface.post'),
     url(r'^interface/job/cancel$', dashboardApi.cancel_job, name='interface.cancel'),

@@ -29,7 +29,7 @@ def change_pass(request):
     """
     try:
         data = json.loads(request.body)
-        res = db.credentials.update_one({"username": data['username'], "password": data['original_pass']},
+        res = db.credentials.update_one({"username": data['username'], "password": data['old_pass']},
                                         {"$set": {"password": data['new_pass']}})
         return jsonResponse({"success": bool(res.modified_count)})
     except Exception, e:

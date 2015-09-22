@@ -81,7 +81,8 @@ def get_pipeline(request):
         if new_api:
             pipeline = {
                 'required': [],
-                'additional': []
+                'additional': [],
+                'excluded': []
             }
             # complete.pop('customer', '')
             for k, v in complete.items():
